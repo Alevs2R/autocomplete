@@ -1,6 +1,70 @@
-html{
-  height: 100%;
+@import "fonts";
+
+@import "variables";
+@import "mixins";
+
+.autocomplete {
+  color: #404040;
+  line-height: 20px;
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, Tahoma, sans-serif;
+  font-size: 14px;
+  font-weight: normal;
+  padding: 5px;
+  display: inline-block;
+  vertical-align: middle;
+  border: 1px solid $border-color;
+  border-top-color: $border-top-color;
+  box-shadow: inset 0 1px 1px -1px $border-top-color;
+  box-sizing: border-box;
+  background: #fff;
+
+  @include placeholder {
+    color: $placeholder-color;
+  }
+
+  &:focus {
+    outline: none;
+    @include input-box-shadow($blue);
+
+    @include placeholder {
+      color: lighten($placeholder-color, 20%);
+    }
+  }
+
+  &.error {
+    @include input-box-shadow($red);
+  }
+  &.warning {
+    @include input-box-shadow($orange);
+  }
+  &[disabled]{
+    box-shadow: none;
+    background: $disabled-background-color;
+    cursor: not-allowed;
+  }
+
 }
-body{
-  margin: 0;
+
+.autocomplete-wrapper {
+  display: inline-block;
+  vertical-align: middle;
+  position: relative;
+
+  &.has-arrow {
+    &:after {
+      content: "\e04c";
+      font-family: Icons;
+      position: absolute;
+      right: 1px;
+      top: 1px;
+      line-height: 30px;
+      height: 30px;
+      width: 30px;
+      text-align: center;
+      background: none;
+    }
+    input {
+      padding-right: 30px;
+    }
+  }
 }

@@ -1,0 +1,40 @@
+html, body{
+    height: 100%;
+}
+body{
+    color: #404040;
+    line-height: 20px;
+    font-family:'Segoe UI','Helvetica Neue',Arial,Tahoma,sans-serif;
+    font-size: 14px;
+    font-weight: normal;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.content{
+}
+
+h1{
+    font-size: 42px;
+    font-weight: 200;
+    line-height: 50px;
+    margin: 0 0 20px;
+}
+
+label{
+    display: inline;
+    margin-right: 50px;
+}
+
+input{
+    width: 270px;
+}
+
+.footer{
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+}

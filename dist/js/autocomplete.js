@@ -1,4 +1,14 @@
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else if(typeof exports === 'object')
+		exports["Autocomplete"] = factory();
+	else
+		root["Autocomplete"] = factory();
+})(this, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -78,9 +88,18 @@
 
 __webpack_require__(0);
 
-alert(1);
+module.exports =  AutocompleteFactory;
 
+function AutocompleteFactory(selector, options){
+    return new Autocomplete(selector, options);
+}
+
+
+function Autocomplete(node, options) {
+
+}
 
 /***/ })
 /******/ ]);
+});
 //# sourceMappingURL=autocomplete.js.map

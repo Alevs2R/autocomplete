@@ -17,7 +17,8 @@ module.exports = function (env) {
                             {
                                 loader: 'css-loader',
                                 options: {
-                                    minimize: production// {/* CSSNano Options */}
+                                    minimize: production, // {/* CSSNano Options */}
+                                    url: false
                                 }
                             },
                             {
@@ -30,7 +31,9 @@ module.exports = function (env) {
         },
         output: {
             path: './dist',
-            filename: production ? 'js/autocomplete.min.js' : 'js/autocomplete.js'
+            filename: production ? 'js/autocomplete.min.js' : 'js/autocomplete.js',
+            libraryTarget: 'umd',
+            library: ['Autocomplete'],
         },
         plugins: production ? [
             new ExtractTextPlugin("css/autocomplete.min.css")
