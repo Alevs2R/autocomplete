@@ -28,6 +28,33 @@ body {
   font-weight: 400;
   src: local("Segoe UI"), local("SegoeUI"), url("//i.s-microsoft.com/fonts/Segoe-UI/Cyrillic/Normal/latest.woff") format("woff"); }
 
+.autocomplete-dropdown {
+  position: absolute;
+  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.16);
+  padding-bottom: 5px;
+  color: #404040;
+  line-height: 20px;
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, Tahoma, sans-serif;
+  font-size: 14px;
+  font-weight: normal; }
+  .autocomplete-dropdown ul {
+    width: 300px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 0;
+    text-align: left;
+    list-style-type: none;
+    margin: 0; }
+    .autocomplete-dropdown ul.el {
+      display: block; }
+      .autocomplete-dropdown ul.el.active {
+        background: #559ad8; }
+  .autocomplete-dropdown li {
+    padding: 5px; }
+    .autocomplete-dropdown li:hover {
+      background: #559ad8;
+      color: #fff; }
+
 .autocomplete {
   color: #404040;
   line-height: 20px;

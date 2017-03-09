@@ -1,1 +1,1 @@
-console.log(Autocomplete('.autocomplete', 'c'));
+console.log(Autocomplete('.autocomplete', {'source': 'kladr.json'}));
