@@ -28,7 +28,10 @@ var _options = {
     'searchByEntry:': false,
     'idProperty': 'Id',
     'maxResults': 20,
-    'displayedProperty': "City"
+    'minHeight': 200,
+    'maxHeight': 450,
+    'displayedProperty': "City",
+    'dropdownPosition': "top",
 };
 
 function Autocomplete(elem, options) {
@@ -62,26 +65,64 @@ Autocomplete.prototype = {
     },
     _unBindEvents(){
     },
-    _showDropdown(){
+    _createDropdown(){
         this.isDropdownCreated = true;
 
-        console.log('show dropdown');
-        let elemRect = this.input.getBoundingClientRect();
-
         let dropdown = document.createElement('div');
-        dropdown.className = "autocomplete-dropdown";
+        dropdown.className = 'autocomplete-dropdown';
+        dropdown.style.visibility = 'hidden';
 
         this.elementsList = document.createElement('ul');
         dropdown.appendChild(this.elementsList);
-
-        dropdown.style.left = elemRect.left;
-        dropdown.style.top = elemRect.bottom + 3;
-
-        this.input.parentNode.insertBefore(dropdown, this.input.nextSibling);
+        document.body.appendChild(dropdown);
         this.dropdown = dropdown;
     },
+    _getDropdownHeight(availableSpace){
+        return Math.min(Math.max(this.options.minHeight, availableSpace), this.options.maxHeight);
+    },
+
+    getCoords(elem) { // crossbrowser version
+        var box = elem.getBoundingClientRect();
+
+        var body = document.body;
+        var docEl = document.documentElement;
+
+        var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+        var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+
+        var clientTop = docEl.clientTop || body.clientTop || 0;
+        var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+        var top = box.top + scrollTop - clientTop;
+        var left = box.left + scrollLeft - clientLeft;
+
+        return {top: Math.round(top), bottom: Math.round(top) + elem.offsetHeight, left: Math.round(left)};
+    },
+
+    _showDropdown(){
+        const OFFSET_INPUT = 2;
+        const WIDTH_INCREASE = 30;
+        let coords = this.getCoords(this.input);
+        let offsetBottom = document.body.clientHeight - coords.bottom;
+
+        if (this.options.dropdownPosition == 'top' || (this.options.dropdownPosition == 'auto' && offsetBottom < this.options.minHeight)) {
+            this.dropdown.style.maxHeight = this._getDropdownHeight(coords.top - OFFSET_INPUT) + 'px';
+            this.dropdown.style.bottom = document.body.clientHeight - coords.top + OFFSET_INPUT + 'px';
+        }
+        else {
+            this.dropdown.style.top = (coords.top + this.input.offsetHeight + OFFSET_INPUT) + "px";
+            this.dropdown.style.maxHeight = this._getDropdownHeight(offsetBottom - OFFSET_INPUT) + 'px';
+        }
+        let maxWidth = document.body.clientWidth - coords.left;
+
+        this.dropdown.style.left = coords.left + 'px';
+        this.dropdown.style.maxWidth = maxWidth + 'px';
+        this.dropdown.style.minWidth = Math.min(this.input.offsetWidth + WIDTH_INCREASE, maxWidth) + 'px';
+        this.dropdown.style.visibility = 'visible';
+
+        //TODO reaction on window resize
+    },
     _loadJSON(url){
-        console.log('asdasd');
         return new Promise(function (resolve, reject) {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url);
@@ -133,7 +174,6 @@ Autocomplete.prototype = {
         if (!this.isDropdownCreated) return;
         this.dropdown.parentNode.removeChild(this.dropdown);
         this.isDropdownCreated = false;
-        console.log('remove');
     },
     _showSearchResult(result){
         if (result.length == 0) {
@@ -146,10 +186,12 @@ Autocomplete.prototype = {
             list += '<li>' + row[this.options.displayedProperty] + '</li>';
         }
         if (!this.isDropdownCreated) {
+            this._createDropdown();
+            this.elementsList.innerHTML = list;
             this._showDropdown();
-        }
-        this.elementsList.innerHTML = list;
 
+        }
+        else this.elementsList.innerHTML = list;
     },
     _selectElement(){
     },

@@ -23,6 +23,10 @@
     color: $placeholder-color;
   }
 
+  &:hover{
+    box-shadow: inset 0 1px 1px -1px darken($border-top-color, 50%);
+  }
+
   &:focus {
     outline: none;
     @include input-box-shadow($blue);
