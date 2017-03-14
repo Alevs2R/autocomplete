@@ -1,42 +1,90 @@
-html, body{
+html, body {
     height: 100%;
 }
-body{
+
+body {
     color: #404040;
     line-height: 20px;
-    font-family:'Segoe UI','Helvetica Neue',Arial,Tahoma,sans-serif;
-    font-size: 14px;
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, Tahoma, sans-serif;
+    font-size: 16px;
     font-weight: normal;
     margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.content{
-    text-align: center;
 }
 
-h1{
+.content {
+    margin: 0 auto;
+    padding: 40px 20px;
+    max-width: 1000px;
+}
+
+h1 {
     font-size: 42px;
     font-weight: 200;
     line-height: 50px;
-    margin: 0 0 20px;
+    margin: 0 0 10px;
 }
 
-label{
+h1 span{
+    color: #9B9B9B;
+}
+
+
+h2 {
+    margin-top: 45px;
+    margin-bottom: 15px;
+    font-size: 32px;
+    line-height: 40px;
+    font-weight: 300
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+label {
     display: inline;
     margin-right: 50px;
     vertical-align: middle;
 }
 
-input{
+input {
     width: 270px;
 }
 
-.footer{
-    position: absolute;
-    bottom: 20px;
-    left: 0;
-    right: 0;
-    text-align: center;
+section {
+
+}
+
+.demo{
+    margin: 20px 0 10px;
+}
+
+pre{
+    font-size: 14px;
+}
+
+footer {
+    margin-top: 45px;
+}
+
+
+table{
+    border: 1px solid #ddd;
+    border-collapse: collapse;
+}
+
+th, td{
+    padding: 7px;
+    text-align: left;
+    border: 1px solid #ddd;
+    margin: 0;
+}
+th{
+    font-weight: bolder;
+    vertical-align: bottom;
+    border-bottom: 2px solid #ddd;
+}
+td{
+    vertical-align: top;
 }

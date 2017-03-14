@@ -4,23 +4,123 @@
     <meta charset="UTF-8">
     <title>Автокомплит | Демо</title>
     <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="prism.css">
     <link rel="stylesheet" href="../dist/css/autocomplete.css">
 </head>
 <body>
 <div class="content">
-    <h1>Автокомплит списка городов</h1>
-    <label for="city">Город</label>
-    <div class="autocomplete-wrapper">
-        <input id="city" type="text" class="autocomplete" placeholder="Начните вводить код или название">
-    </div>
+    <section>
+        <h1>Автокомплит <span>Autocomplete</span></h1>
+                            <p>             Поле ввода с подсказками на чистом JavaScript</p>
+    </section>
+    <section>
+        <h2>Пример</h2>
+        <p>Автокомплит списка городов</p>
+        <div class="demo">
+            <label for="city">Город</label>
+            <div class="autocomplete-wrapper">
+                <input id="city" type="text" class="autocomplete" placeholder="Начните вводить код или название">
+            </div>
+        </div>
+    </section>
+    <section class="install">
+        <h2>Установка</h2>
+        <h3>1. Подключите JS и CSS файлы</h3>
+        <p>Собранные и минифицированные файлы содержатся в папке <a href="">dist/</a> в <a href="">GitHub</a>
+            репозитории.
+            Скопируйте содержимое папки в ваш проект.
+            Sass и исходные JS файлы содержатся в папке <a href="">src/</a>, но перед использованием их необходимо собрать.
+        </p>
+        <p>Вставьте данные строчки кода в ваш HTML</p>
 
+        <pre class="  language-markup"><code class="  language-markup"><span class="token tag"><span
+                class="token tag"><span class="token punctuation">&lt;</span>link</span> <span class="token attr-name">rel</span><span
+                class="token attr-value"><span class="token punctuation">=</span><span
+                class="token punctuation">"</span>stylesheet<span class="token punctuation">"</span></span> <span
+                class="token attr-name">href</span><span class="token attr-value"><span
+                class="token punctuation">=</span><span
+                class="token punctuation">"</span>path/to/autocmplete.min.css<span
+                class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span
+        class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation">=</span><span
+        class="token punctuation">"</span>path/to/autocomplete.min.js<span
+        class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span><span
+                    class="token script language-javascript"></span><span class="token tag"><span
+                    class="token tag"><span class="token punctuation">&lt;/</span>script</span><span
+                    class="token punctuation">&gt;</span></span></code></pre>
+
+        <p>CSS рекомендуется вставлять в <code class="language-markup">&lt;head&gt;</code>, а JS перед <code
+                class="language-markup">&lt;/body&gt;</code></p>
+
+        <h3>2. Вставьте HTML</h3>
+        <pre class="  language-markup"><code class="  language-markup"><span class="token tag"><span
+                class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">class</span><span
+                class="token attr-value"><span class="token punctuation">=</span><span
+                class="token punctuation">"</span>autocomplete<span class="token punctuation">"</span></span> <span
+                class="token attr-name">type</span><span class="token attr-value"><span
+                class="token punctuation">=</span><span class="token punctuation">"</span>text<span
+                class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span></code></pre>
+
+        <h3>3. Инициализируйте JS</h3>
+        <pre><code class="language-javascript">Autocomplete('.autocomplete', {source: 'kladr.json', displayedProperty: 'City'});</code></pre>
+        <p>
+            Первый аргумент – селектор (<code class="language-javascript">String</code>) или объект <code
+                class="language-javascript">Element</code><br>
+            Второй аргумент – опции (<code class="language-javascript">Object</code>)
+        </p>
+    </section>
+    <section class="usage">
+        <h2>Опции</h2>
+        <p>Автокомплит имеет разные настройки, которые можно передать в конструктор при инициализации</p>
+        <table>
+            <thead>
+            <tr>
+                <th>Опция</th>
+                <th>Значения</th>
+                <th>По умолчанию</th>
+                <th>Описание</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>source (обязательная)</td>
+                <td>String или массив объектов (в частности, массив строк)</td>
+                <td>null</td>
+                <td>
+                    Ссылка на источник данных в формате JSON или массив. Если это массив строк, опция displayedProperty
+                    игнорируется.
+                </td>
+            </tr>
+            <tr>
+                <td>displayedProperty</td>
+                <td>String</td>
+                <td>value</td>
+                <td>
+                    Свойство объекта, значение которого будет отображаться в выпадающем списке
+                </td>
+            </tr>
+            <tr>
+                <td>dropdownPosition</td>
+                <td>top, bottom, auto</td>
+                <td>auto</td>
+                <td>
+                    Определяет, с какой стороны от поля ввода появится выпадающий список: сверху или снизу.
+                    Если установлено <i>auto</i>, положение будет определяться автоматически.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <footer>
+        Автор: <a
+            href="mailto:ac1298@mail.ru">Алексей Евлампьев</a>
+    </footer>
 </div>
-<div class="footer">
-    Автор: <a
-        href="mailto:ac1298@mail.ru">Алексей Евлампьев</a>
-</div>
+
 
 <script src="../dist/js/autocomplete.js"></script>
+<script src="prism.js"></script>
 <script src="index.js"></script>
 </body>
 </html>

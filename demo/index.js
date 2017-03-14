@@ -1,1 +1,1 @@
-console.log(Autocomplete('.autocomplete', {'source': 'kladr.json'}));
+Autocomplete('.autocomplete', {source: 'kladr.json', displayedProperty: 'City'});

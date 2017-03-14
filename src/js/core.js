@@ -13,34 +13,37 @@ function extend(a, b) {
 }
 
 function AutocompleteFactory(elem, options) {
-
-    if (typeof elem == 'string') {
-        elem = document.querySelector(elem);
-    }
-
     return new Autocomplete(elem, options);
 }
 
-var _options = {
+const _options = {
     'source': null,
     'arrow': false,
-    'numberOfRows': 5,
-    'searchByEntry:': false,
-    'idProperty': 'Id',
+    'minResults': 5,
     'maxResults': 20,
     'minHeight': 200,
     'maxHeight': 450,
-    'displayedProperty': "City",
-    'dropdownPosition': "top",
+    'displayedProperty': "value",
+    'dropdownPosition': "auto",
+};
+
+const keynumCodes = {
+    UP: 38,
+    DOWN: 40,
+    ENTER: 13
 };
 
 function Autocomplete(elem, options) {
     this.options = extend(this.options, options);
 
-    if (typeof this.options.source == 'string') this._loadJSON(this.options.source).then((data) => this.data = data);
-    else this.data = this.options.source;
+    try {
+        this.setInput(elem);
+        this.setData(this.options.source);
+    } catch (err){
+        console.error(err);
+        return;
+    }
 
-    this.input = elem;
     this._bindEvents();
 
     this.handleEvent = function (e) {
@@ -51,23 +54,47 @@ function Autocomplete(elem, options) {
             case "input":
                 this._search(this.input.value);
                 break;
+            case "keydown":
+                this._keyDownEvent(e);
         }
-    }
+    };
+
+    this._removeDropdown = this._removeDropdown.bind(this);
 }
 
 Autocomplete.prototype = {
     options: _options,
     lastSearch: null,
     isDropdownCreated: false,
+    selected: undefined,
+    activeElement: undefined,
+
+    setData(source){
+        if (typeof source == 'string') this._loadJSON(source).then(data => this.data = data).catch(err => console.error(err));
+        else {
+            if (!(source instanceof Array)) throw 'source should be instance of Array or String';
+            if (typeof source[0] == 'string') {
+                this.data = source.map(str => {value: str});
+                this.options.displayedProperty = 'value';
+            }
+            else this.data = source;
+        }
+    },
+
+    setInput(elem){
+        console.log(elem);
+        if (typeof elem == 'string') this.input = document.querySelector(elem);
+        else if (elem.hasOwnProperty('tagName') && elem.tagName == 'input') this.input = elem;
+        else throw '1 argument should be String or instance of Element with tagName input';
+    },
+
     _bindEvents(){
-        this.input.addEventListener("focus", this, false);
         this.input.addEventListener("input", this, false);
+        this.input.addEventListener("focus", this, false);
     },
     _unBindEvents(){
     },
     _createDropdown(){
-        this.isDropdownCreated = true;
-
         let dropdown = document.createElement('div');
         dropdown.className = 'autocomplete-dropdown';
         dropdown.style.visibility = 'hidden';
@@ -120,6 +147,13 @@ Autocomplete.prototype = {
         this.dropdown.style.minWidth = Math.min(this.input.offsetWidth + WIDTH_INCREASE, maxWidth) + 'px';
         this.dropdown.style.visibility = 'visible';
 
+        document.body.style.overflow = 'hidden';
+
+        document.body.addEventListener('click', this._removeDropdown);
+        document.addEventListener('keydown', this);
+
+
+        this.isDropdownCreated = true;
         //TODO reaction on window resize
     },
     _loadJSON(url){
@@ -173,26 +207,67 @@ Autocomplete.prototype = {
     _removeDropdown(){
         if (!this.isDropdownCreated) return;
         this.dropdown.parentNode.removeChild(this.dropdown);
+        document.body.style.overflow = 'auto';
+        document.body.removeEventListener('click', this._removeDropdown);
+
         this.isDropdownCreated = false;
     },
+
     _showSearchResult(result){
         if (result.length == 0) {
             this._removeDropdown();
             return;
         }
 
-        let list = '';
-        for (row of result) {
-            list += '<li>' + row[this.options.displayedProperty] + '</li>';
-        }
         if (!this.isDropdownCreated) {
             this._createDropdown();
-            this.elementsList.innerHTML = list;
+        }
+
+        this.elementsList.innerHTML = '';
+        for (let row of result) {
+            let li = document.createElement('li');
+            li.appendChild(document.createTextNode( row[this.options.displayedProperty] ));
+            li.addEventListener('click', this.clickEvent.bind(this));
+            li.listRow = row;
+            this.elementsList.appendChild(li);
+        }
+
+        this.setActiveElement(this.elementsList.firstChild);
+
+        if (!this.isDropdownCreated) {
             this._showDropdown();
+        }
+    },
+
+    clickEvent(event){
+        this.input.value = event.target.innerHTML;
+        this.selected = event.target.listRow;
+        this._removeDropdown();
+        event.stopPropagation();
+    },
+
+    setActiveElement(elem){
+        if(this.activeElement) this.activeElement.className = '';
+        elem.className = 'active';
+        this.activeElement = elem;
+    },
+
+    _keyDownEvent(event){
+        switch(event.keyCode){
+            case keynumCodes.DOWN:
+                if(!this.activeElement.nextSibling) return;
+                this.setActiveElement(this.activeElement.nextSibling);
+                break;
+            case keynumCodes.UP:
+                if(!this.activeElement.previousSibling) return;
+                this.setActiveElement(this.activeElement.previousSibling);
+                break;
+            case keynumCodes.ENTER:
+                this.input.value = this.activeElement.listRow[this.options.displayedProperty];
+                this._removeDropdown();
+                break;
 
         }
-        else this.elementsList.innerHTML = list;
-    },
-    _selectElement(){
-    },
+    }
+
 };

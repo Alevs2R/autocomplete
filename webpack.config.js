@@ -11,6 +11,10 @@ module.exports = function (env) {
         module: {
             loaders: [
                 {
+                    test: /\.js$/,
+                    loader: 'babel-loader?presets[]=es2015'
+                },
+                {
                     test: /\.scss$/,
                     loader: ExtractTextPlugin.extract({
                         fallback: "style-loader", use: [

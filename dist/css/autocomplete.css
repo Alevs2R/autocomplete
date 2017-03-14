@@ -47,13 +47,9 @@ body {
     text-align: left;
     list-style-type: none;
     margin: 0; }
-    .autocomplete-dropdown ul.el {
-      display: block; }
-      .autocomplete-dropdown ul.el.active {
-        background: #559ad8; }
   .autocomplete-dropdown li {
     padding: 5px; }
-    .autocomplete-dropdown li:hover {
+    .autocomplete-dropdown li:hover, .autocomplete-dropdown li.active {
       background: #559ad8;
       color: #fff; }
 
