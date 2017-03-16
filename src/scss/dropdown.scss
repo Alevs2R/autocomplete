@@ -3,7 +3,6 @@
 .autocomplete-dropdown{
   position: absolute;
   box-shadow: 0 1px 6px 0 rgba(0,0,0,0.16);
-  padding-bottom: 5px;
   background: #fff;
 
   color: #404040;
@@ -18,12 +17,16 @@
   ul{
     width: 300px;
     max-height: 450px;
-    padding: 0;
+    padding: 0 0 5px 0;
     text-align: left;
     list-style-type: none;
     margin: 0;
   }
 
+  div{
+    color: $grey;
+    padding: 5px;
+  }
 
   li{
     padding: 5px;

@@ -95,7 +95,16 @@ function Dropdown(baseElement, options) {
     this.baseElement = baseElement;
     this.position = options.dropdownPosition;
     this.displayedProperty = options.displayedProperty;
+
+    this.handleEvent = function (e) {
+        switch (e.type) {
+            case "keydown":
+                this._keyDownEvent(e);
+        }
+    };
 }
+
+var NOTHING_FOUND = 'Не найдено';
 
 var keynumCodes = {
     UP: 38,
@@ -116,64 +125,81 @@ Dropdown.prototype = {
         var dropdown = document.createElement('div');
         dropdown.className = 'autocomplete-dropdown';
         dropdown.style.visibility = 'hidden';
+        dropdown.addEventListener('click', function (e) {
+            return e.stopPropagation();
+        });
 
-        this.elementsList = document.createElement('ul');
-        dropdown.appendChild(this.elementsList);
         document.body.appendChild(dropdown);
         this.dropdown = dropdown;
 
         this.isCreated = true;
     },
     addElement: function addElement(element) {
+        var val = void 0;
+        if (element.hasOwnProperty('search') && element.search.property == this.displayedProperty) {
+            var str = element[this.displayedProperty];
+            var _element$search = element.search,
+                pos = _element$search.pos,
+                length = _element$search.length;
+
+            val = str.substr(0, pos) + '<b>' + str.substr(pos, length) + '</b>' + str.substr(pos + length);
+        } else {
+            val = element[this.displayedProperty];
+        }
+
         var li = document.createElement('li');
-        li.appendChild(document.createTextNode(element[this.displayedProperty]));
+        li.innerHTML = val;
         li.addEventListener('click', this._clickEvent.bind(this));
         li.listRow = element;
         this.elementsList.appendChild(li);
+    },
+    addEmptyMessage: function addEmptyMessage() {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(NOTHING_FOUND));
+        this.dropdown.appendChild(div);
     },
     showList: function showList(list) {
         if (!this.isCreated) this._create();else {
             this.clear();
         }
 
-        if (list.length == 0) {
-            this.remove();
-            return;
-        }
+        if (list.length == 0) this.addEmptyMessage();else {
+            this.elementsList = document.createElement('ul');
+            this.dropdown.appendChild(this.elementsList);
 
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
 
-        try {
-            for (var _iterator = list[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var row = _step.value;
-
-                this.addElement(row);
-            }
-        } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-        } finally {
             try {
-                if (!_iteratorNormalCompletion && _iterator.return) {
-                    _iterator.return();
+                for (var _iterator = list[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var row = _step.value;
+
+                    this.addElement(row);
                 }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
             } finally {
-                if (_didIteratorError) {
-                    throw _iteratorError;
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
                 }
             }
-        }
 
-        this.setActiveElement(this.elementsList.firstChild);
+            this.setActiveElement(this.elementsList.firstChild);
+        }
 
         if (!this.isVisible) {
             this._show();
         }
     },
     _clickEvent: function _clickEvent(event) {
-        event.stopPropagation();
         this.select(event.target.listRow);
     },
     _getHeight: function _getHeight(availableSpace) {
@@ -242,10 +268,7 @@ Dropdown.prototype = {
         this.isVisible = false;
     },
     clear: function clear() {
-        if (!this.isCreated) {
-            this._create();
-        }
-        this.elementsList.innerHTML = '';
+        this.dropdown.innerHTML = '';
     },
     select: function select() {},
     _keyDownEvent: function _keyDownEvent(event) {
@@ -315,7 +338,16 @@ var _options = {
     'minHeight': 200,
     'maxHeight': 450,
     'displayedProperty': "value",
-    'dropdownPosition': "auto"
+    'searchProperties': [],
+    'dropdownPosition': "auto",
+    'sort': false,
+    'sortBy': null,
+    'sortOrder': 'asc',
+    'isValidElement': function isValidElement() {
+        return true;
+    },
+    'searchByEntry': true,
+    'caseSensitive': false
 };
 
 function Autocomplete(elem, options) {
@@ -364,18 +396,31 @@ Autocomplete.prototype = {
         var _this = this;
 
         if (typeof source == 'string') this._loadJSON(source).then(function (data) {
-            return _this.data = data;
+            return _this.data = _this.sort(data);
         }).catch(function (err) {
             return console.error(err);
         });else {
             if (!(source instanceof Array)) throw 'source should be instance of Array or String';
+            var data = void 0;
             if (typeof source[0] == 'string') {
-                this.data = source.map(function (str) {
+                data = source.map(function (str) {
                     value: str;
                 });
                 this.options.displayedProperty = 'value';
-            } else this.data = source;
+            } else data = source;
+            this.data = this.sort(data);
         }
+    },
+    sort: function sort(data) {
+        if (!this.options.sort) return;
+        var p = this.options.sortBy ? this.options.sortBy : this.options.displayedProperty;
+        var v = this.options.sortOrder == 'asc' ? -1 : 1;
+        var result = data.sort(function (a, b) {
+            if (a[p] < b[p]) return v;
+            if (a[p] > b[p]) return -v;
+            return 0;
+        });
+        return result;
     },
     setInput: function setInput(elem) {
         if (typeof elem == 'string') this.input = document.querySelector(elem);else if (elem.hasOwnProperty('tagName') && elem.tagName == 'input') this.input = elem;else throw '1 argument should be String or instance of Element with tagName input';
@@ -410,13 +455,19 @@ Autocomplete.prototype = {
             xhr.send();
         });
     },
+    testByEntry: function testByEntry(str, search) {
+        str = ' ' + str.replace(/"/g, "");
+        return str.indexOf(' ' + search);
+    },
     _getSearchResult: function _getSearchResult(value) {
         var searchData = void 0;
         if (this.lastSearch && value.startsWith(this.lastSearch.value)) {
             searchData = this.lastSearch.result;
         } else searchData = this.data;
-
         if (!this.data) return [];
+
+        var lValue = this.options.caseSensitive ? value : value.toLowerCase();
+
         var result = [];
         var _iteratorNormalCompletion = true;
         var _didIteratorError = false;
@@ -426,12 +477,30 @@ Autocomplete.prototype = {
             for (var _iterator = this.data[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                 var row = _step.value;
 
+                if (!this.options.isValidElement(row)) continue;
+
                 if (row[this.options.displayedProperty] == value) this.selected = row;
 
                 for (var property in row) {
-                    if (row.hasOwnProperty(property) && String(row[property]).startsWith(value)) {
-                        result.push(row);
-                        break;
+                    if (row.hasOwnProperty(property)) {
+                        var str = this.options.caseSensitive ? String(row[property]) : String(row[property]).toLowerCase();
+                        if (this.options.searchByEntry) {
+
+                            var pos = this.testByEntry(str, lValue);
+                            if (pos != -1) {
+                                row.search = {
+                                    pos: pos, property: property,
+                                    length: lValue.length
+                                };
+                                result.push(row);
+                                break;
+                            }
+                        } else {
+                            if (str.startsWith(lValue)) {
+                                result.push(row);
+                                break;
+                            }
+                        }
                     }
                 }
                 if (result.length == this.options.maxResults) break;

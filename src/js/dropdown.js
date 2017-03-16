@@ -6,7 +6,16 @@ function Dropdown(baseElement, options) {
     this.baseElement = baseElement;
     this.position = options.dropdownPosition;
     this.displayedProperty = options.displayedProperty;
+
+    this.handleEvent = function (e) {
+        switch (e.type) {
+            case "keydown":
+                this._keyDownEvent(e);
+        }
+    };
 }
+
+const NOTHING_FOUND = 'Не найдено';
 
 const keynumCodes = {
     UP: 38,
@@ -27,9 +36,9 @@ Dropdown.prototype = {
         let dropdown = document.createElement('div');
         dropdown.className = 'autocomplete-dropdown';
         dropdown.style.visibility = 'hidden';
+        dropdown.addEventListener('click', (e)=>e.stopPropagation());
 
-        this.elementsList = document.createElement('ul');
-        dropdown.appendChild(this.elementsList);
+
         document.body.appendChild(dropdown);
         this.dropdown = dropdown;
 
@@ -37,38 +46,53 @@ Dropdown.prototype = {
     },
 
     addElement(element){
+        let val;
+        if(element.hasOwnProperty('search') && element.search.property == this.displayedProperty){
+            let str = element[this.displayedProperty];
+            let {pos, length} = element.search;
+            val = str.substr(0, pos) + '<b>' + str.substr(pos,length) + '</b>' + str.substr(pos+length);
+        }
+        else{
+            val = element[this.displayedProperty];
+        }
+
         let li = document.createElement('li');
-        li.appendChild(document.createTextNode(element[this.displayedProperty]));
+        li.innerHTML = val;
         li.addEventListener('click', this._clickEvent.bind(this));
         li.listRow = element;
         this.elementsList.appendChild(li);
     },
 
+    addEmptyMessage(){
+        let div = document.createElement('div');
+        div.appendChild(document.createTextNode(NOTHING_FOUND));
+        this.dropdown.appendChild(div);
+    },
 
     showList(list){
-        if(!this.isCreated) this._create();
-        else{
+        if (!this.isCreated) this._create();
+        else {
             this.clear();
         }
 
-        if (list.length == 0) {
-            this.remove();
-            return;
+        if (list.length == 0) this.addEmptyMessage();
+        else {
+            this.elementsList = document.createElement('ul');
+            this.dropdown.appendChild(this.elementsList);
+
+            for (let row of list) {
+                this.addElement(row);
+            }
+
+            this.setActiveElement(this.elementsList.firstChild);
         }
 
-        for (let row of list) {
-            this.addElement(row);
-        }
-
-        this.setActiveElement(this.elementsList.firstChild);
-
-        if(!this.isVisible) {
+        if (!this.isVisible) {
             this._show();
         }
     },
 
     _clickEvent(event){
-        event.stopPropagation();
         this.select(event.target.listRow);
     },
 
@@ -95,7 +119,7 @@ Dropdown.prototype = {
     },
 
     _show(){
-        if(!this.isCreated) return;
+        if (!this.isCreated) return;
 
         const OFFSET_INPUT = 2;
         const WIDTH_INCREASE = 30;
@@ -143,22 +167,20 @@ Dropdown.prototype = {
     },
 
     clear(){
-        if (!this.isCreated) {
-            this._create();
-        }
-        this.elementsList.innerHTML = '';
+        this.dropdown.innerHTML = '';
     },
 
-    select(){},
+    select(){
+    },
 
     _keyDownEvent(event){
-        switch(event.keyCode){
+        switch (event.keyCode) {
             case keynumCodes.DOWN:
-                if(!this.activeElement.nextSibling) return;
+                if (!this.activeElement.nextSibling) return;
                 this.setActiveElement(this.activeElement.nextSibling);
                 break;
             case keynumCodes.UP:
-                if(!this.activeElement.previousSibling) return;
+                if (!this.activeElement.previousSibling) return;
                 this.setActiveElement(this.activeElement.previousSibling);
                 break;
             case keynumCodes.ENTER:

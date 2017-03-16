@@ -25,7 +25,14 @@ const _options = {
     'minHeight': 200,
     'maxHeight': 450,
     'displayedProperty': "value",
+    'searchProperties': [],
     'dropdownPosition': "auto",
+    'sort': false,
+    'sortBy': null,
+    'sortOrder': 'asc',
+    'isValidElement': ()=>true,
+    'searchByEntry': true,
+    'caseSensitive': false,
 };
 
 function Autocomplete(elem, options) {
@@ -71,15 +78,29 @@ Autocomplete.prototype = {
     selected: undefined,
 
     setData(source){
-        if (typeof source == 'string') this._loadJSON(source).then(data => this.data = data).catch(err => console.error(err));
+        if (typeof source == 'string') this._loadJSON(source).then(data => this.data = this.sort(data)).catch(err => console.error(err));
         else {
             if (!(source instanceof Array)) throw 'source should be instance of Array or String';
+            let data;
             if (typeof source[0] == 'string') {
-                this.data = source.map(str => {value: str});
+                data = source.map(str => {value: str});
                 this.options.displayedProperty = 'value';
             }
-            else this.data = source;
+            else data = source;
+            this.data = this.sort(data);
         }
+    },
+
+    sort(data){
+        if(!this.options.sort) return;
+        let p = this.options.sortBy ? this.options.sortBy : this.options.displayedProperty;
+        let v = this.options.sortOrder == 'asc' ? -1 : 1;
+        let result = data.sort(function(a, b){
+            if(a[p] < b[p]) return v;
+            if(a[p] > b[p]) return -v;
+            return 0;
+        });
+        return result;
     },
 
     setInput(elem){
@@ -119,22 +140,50 @@ Autocomplete.prototype = {
             xhr.send();
         });
     },
+
+    testByEntry(str, search){
+        str = ' '+str.replace(/"/g,"");
+        return str.indexOf(' '+search);
+
+    },
+
     _getSearchResult(value){
         let searchData;
         if (this.lastSearch && value.startsWith(this.lastSearch.value)) {
             searchData = this.lastSearch.result;
         }
         else searchData = this.data;
-
         if (!this.data) return [];
+
+        let lValue = this.options.caseSensitive ? value : value.toLowerCase();
+
         let result = [];
         for (let row of this.data) {
+            if(!this.options.isValidElement(row)) continue;
+
             if(row[this.options.displayedProperty] == value) this.selected = row;
 
             for (let property in row) {
-                if (row.hasOwnProperty(property) && String(row[property]).startsWith(value)) {
-                    result.push(row);
-                    break;
+                if (row.hasOwnProperty(property)) {
+                    let str = this.options.caseSensitive ?  String(row[property]) :  String(row[property]).toLowerCase();
+                    if(this.options.searchByEntry){
+
+                        let pos = this.testByEntry(str, lValue);
+                        if(pos != -1){
+                            row.search = {
+                                pos, property,
+                                length: lValue.length,
+                            };
+                            result.push(row);
+                            break;
+                        }
+                    }
+                    else{
+                        if(str.startsWith(lValue)) {
+                            result.push(row);
+                            break;
+                        }
+                    }
                 }
             }
             if (result.length == this.options.maxResults) break;
