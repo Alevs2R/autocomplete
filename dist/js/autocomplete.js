@@ -73,23 +73,223 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-__webpack_require__(0);
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.default = Dropdown;
+
+
+function Dropdown(baseElement, options) {
+    this.minHeight = options.minHeight;
+    this.maxHeight = options.maxHeight;
+    this.baseElement = baseElement;
+    this.position = options.dropdownPosition;
+    this.displayedProperty = options.displayedProperty;
+}
+
+var keynumCodes = {
+    UP: 38,
+    DOWN: 40,
+    ENTER: 13,
+    ESC: 27
+};
+
+Dropdown.prototype = {
+
+    isCreated: false,
+    isVisible: false,
+    activeElement: undefined,
+    elementsList: null,
+    dropdown: null,
+
+    _create: function _create() {
+        var dropdown = document.createElement('div');
+        dropdown.className = 'autocomplete-dropdown';
+        dropdown.style.visibility = 'hidden';
+
+        this.elementsList = document.createElement('ul');
+        dropdown.appendChild(this.elementsList);
+        document.body.appendChild(dropdown);
+        this.dropdown = dropdown;
+
+        this.isCreated = true;
+    },
+    addElement: function addElement(element) {
+        var li = document.createElement('li');
+        li.appendChild(document.createTextNode(element[this.displayedProperty]));
+        li.addEventListener('click', this._clickEvent.bind(this));
+        li.listRow = element;
+        this.elementsList.appendChild(li);
+    },
+    showList: function showList(list) {
+        if (!this.isCreated) this._create();else {
+            this.clear();
+        }
+
+        if (list.length == 0) {
+            this.remove();
+            return;
+        }
+
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = list[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var row = _step.value;
+
+                this.addElement(row);
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                    _iterator.return();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
+        }
+
+        this.setActiveElement(this.elementsList.firstChild);
+
+        if (!this.isVisible) {
+            this._show();
+        }
+    },
+    _clickEvent: function _clickEvent(event) {
+        event.stopPropagation();
+        this.select(event.target.listRow);
+    },
+    _getHeight: function _getHeight(availableSpace) {
+        return Math.min(Math.max(this.minHeight, availableSpace), this.maxHeight);
+    },
+    _getCoords: function _getCoords(elem) {
+        // crossbrowser version
+        var box = elem.getBoundingClientRect();
+
+        var body = document.body;
+        var docEl = document.documentElement;
+
+        var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+        var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+
+        var clientTop = docEl.clientTop || body.clientTop || 0;
+        var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+        var top = box.top + scrollTop - clientTop;
+        var left = box.left + scrollLeft - clientLeft;
+
+        return { top: Math.round(top), bottom: Math.round(top) + elem.offsetHeight, left: Math.round(left) };
+    },
+    _show: function _show() {
+        if (!this.isCreated) return;
+
+        var OFFSET_INPUT = 2;
+        var WIDTH_INCREASE = 30;
+
+        var coords = this._getCoords(this.baseElement);
+        var offsetBottom = document.body.clientHeight - coords.bottom;
+
+        if (this.position == 'top' || this.position == 'auto' && offsetBottom < this.minHeight) {
+            this.dropdown.style.maxHeight = this._getHeight(coords.top - OFFSET_INPUT) + 'px';
+            this.dropdown.style.bottom = document.body.clientHeight - coords.top + OFFSET_INPUT + 'px';
+        } else {
+            this.dropdown.style.top = coords.top + this.baseElement.offsetHeight + OFFSET_INPUT + "px";
+            this.dropdown.style.maxHeight = this._getHeight(offsetBottom - OFFSET_INPUT) + 'px';
+        }
+        var maxWidth = document.body.clientWidth - coords.left;
+
+        this.dropdown.style.left = coords.left + 'px';
+        this.dropdown.style.maxWidth = maxWidth + 'px';
+        this.dropdown.style.minWidth = Math.min(this.baseElement.offsetWidth + WIDTH_INCREASE, maxWidth) + 'px';
+        this.dropdown.style.visibility = 'visible';
+
+        document.body.style.overflow = 'hidden';
+
+        document.addEventListener('keydown', this);
+
+        this.isVisible = true;
+        //TODO reaction on window resize
+    },
+    setActiveElement: function setActiveElement(elem) {
+        if (this.activeElement) this.activeElement.className = '';
+        elem.className = 'active';
+        this.activeElement = elem;
+    },
+    remove: function remove() {
+        if (!this.isCreated) return;
+        this.dropdown.parentNode.removeChild(this.dropdown);
+        document.body.style.overflow = 'auto';
+        document.removeEventListener('keydown', this);
+
+        this.isCreated = false;
+        this.isVisible = false;
+    },
+    clear: function clear() {
+        if (!this.isCreated) {
+            this._create();
+        }
+        this.elementsList.innerHTML = '';
+    },
+    select: function select() {},
+    _keyDownEvent: function _keyDownEvent(event) {
+        switch (event.keyCode) {
+            case keynumCodes.DOWN:
+                if (!this.activeElement.nextSibling) return;
+                this.setActiveElement(this.activeElement.nextSibling);
+                break;
+            case keynumCodes.UP:
+                if (!this.activeElement.previousSibling) return;
+                this.setActiveElement(this.activeElement.previousSibling);
+                break;
+            case keynumCodes.ENTER:
+                this.select(this.activeElement.listRow);
+                break;
+            case keynumCodes.ESC:
+                this.remove();
+                break;
+
+        }
+    }
+};
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var _dropdown = __webpack_require__(0);
+
+var _dropdown2 = _interopRequireDefault(_dropdown);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+__webpack_require__(1);
+
 
 module.exports = AutocompleteFactory;
 
@@ -118,12 +318,6 @@ var _options = {
     'dropdownPosition': "auto"
 };
 
-var keynumCodes = {
-    UP: 38,
-    DOWN: 40,
-    ENTER: 13
-};
-
 function Autocomplete(elem, options) {
     this.options = extend(this.options, options);
 
@@ -135,12 +329,20 @@ function Autocomplete(elem, options) {
         return;
     }
 
-    this._bindEvents();
+    this.dropdown = new _dropdown2.default(this.input, this.options);
+
+    this.dropdown.select = function (element) {
+        this.input.value = element[this.options.displayedProperty];
+        this.selected = element;
+        this._finishTyping();
+    }.bind(this);
+
+    this._bindInputEvents();
 
     this.handleEvent = function (e) {
         switch (e.type) {
             case "focus":
-                //this._showDropdown();
+                this._onFocusEvent();
                 break;
             case "input":
                 this._search(this.input.value);
@@ -150,15 +352,13 @@ function Autocomplete(elem, options) {
         }
     };
 
-    this._removeDropdown = this._removeDropdown.bind(this);
+    this._finishTyping = this._finishTyping.bind(this);
 }
 
 Autocomplete.prototype = {
     options: _options,
     lastSearch: null,
-    isDropdownCreated: false,
     selected: undefined,
-    activeElement: undefined,
 
     setData: function setData(source) {
         var _this = this;
@@ -178,72 +378,14 @@ Autocomplete.prototype = {
         }
     },
     setInput: function setInput(elem) {
-        console.log(elem);
         if (typeof elem == 'string') this.input = document.querySelector(elem);else if (elem.hasOwnProperty('tagName') && elem.tagName == 'input') this.input = elem;else throw '1 argument should be String or instance of Element with tagName input';
     },
-    _bindEvents: function _bindEvents() {
+    _bindInputEvents: function _bindInputEvents() {
         this.input.addEventListener("input", this, false);
         this.input.addEventListener("focus", this, false);
-    },
-    _unBindEvents: function _unBindEvents() {},
-    _createDropdown: function _createDropdown() {
-        var dropdown = document.createElement('div');
-        dropdown.className = 'autocomplete-dropdown';
-        dropdown.style.visibility = 'hidden';
-
-        this.elementsList = document.createElement('ul');
-        dropdown.appendChild(this.elementsList);
-        document.body.appendChild(dropdown);
-        this.dropdown = dropdown;
-    },
-    _getDropdownHeight: function _getDropdownHeight(availableSpace) {
-        return Math.min(Math.max(this.options.minHeight, availableSpace), this.options.maxHeight);
-    },
-    getCoords: function getCoords(elem) {
-        // crossbrowser version
-        var box = elem.getBoundingClientRect();
-
-        var body = document.body;
-        var docEl = document.documentElement;
-
-        var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-        var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-
-        var clientTop = docEl.clientTop || body.clientTop || 0;
-        var clientLeft = docEl.clientLeft || body.clientLeft || 0;
-
-        var top = box.top + scrollTop - clientTop;
-        var left = box.left + scrollLeft - clientLeft;
-
-        return { top: Math.round(top), bottom: Math.round(top) + elem.offsetHeight, left: Math.round(left) };
-    },
-    _showDropdown: function _showDropdown() {
-        var OFFSET_INPUT = 2;
-        var WIDTH_INCREASE = 30;
-        var coords = this.getCoords(this.input);
-        var offsetBottom = document.body.clientHeight - coords.bottom;
-
-        if (this.options.dropdownPosition == 'top' || this.options.dropdownPosition == 'auto' && offsetBottom < this.options.minHeight) {
-            this.dropdown.style.maxHeight = this._getDropdownHeight(coords.top - OFFSET_INPUT) + 'px';
-            this.dropdown.style.bottom = document.body.clientHeight - coords.top + OFFSET_INPUT + 'px';
-        } else {
-            this.dropdown.style.top = coords.top + this.input.offsetHeight + OFFSET_INPUT + "px";
-            this.dropdown.style.maxHeight = this._getDropdownHeight(offsetBottom - OFFSET_INPUT) + 'px';
-        }
-        var maxWidth = document.body.clientWidth - coords.left;
-
-        this.dropdown.style.left = coords.left + 'px';
-        this.dropdown.style.maxWidth = maxWidth + 'px';
-        this.dropdown.style.minWidth = Math.min(this.input.offsetWidth + WIDTH_INCREASE, maxWidth) + 'px';
-        this.dropdown.style.visibility = 'visible';
-
-        document.body.style.overflow = 'hidden';
-
-        document.body.addEventListener('click', this._removeDropdown);
-        document.addEventListener('keydown', this);
-
-        this.isDropdownCreated = true;
-        //TODO reaction on window resize
+        this.input.addEventListener("click", function (e) {
+            e.stopPropagation();
+        });
     },
     _loadJSON: function _loadJSON(url) {
         return new Promise(function (resolve, reject) {
@@ -284,6 +426,8 @@ Autocomplete.prototype = {
             for (var _iterator = this.data[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                 var row = _step.value;
 
+                if (row[this.options.displayedProperty] == value) this.selected = row;
+
                 for (var property in row) {
                     if (row.hasOwnProperty(property) && String(row[property]).startsWith(value)) {
                         result.push(row);
@@ -311,89 +455,24 @@ Autocomplete.prototype = {
         return result;
     },
     _search: function _search(value) {
-        this._showSearchResult(this._getSearchResult(value.trim()));
+        this.selected = null;
+        this.dropdown.showList(this._getSearchResult(value.trim()));
     },
-    _removeDropdown: function _removeDropdown() {
-        if (!this.isDropdownCreated) return;
-        this.dropdown.parentNode.removeChild(this.dropdown);
-        document.body.style.overflow = 'auto';
-        document.body.removeEventListener('click', this._removeDropdown);
-
-        this.isDropdownCreated = false;
-    },
-    _showSearchResult: function _showSearchResult(result) {
-        if (result.length == 0) {
-            this._removeDropdown();
-            return;
-        }
-
-        if (!this.isDropdownCreated) {
-            this._createDropdown();
-        }
-
-        this.elementsList.innerHTML = '';
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-            for (var _iterator2 = result[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                var row = _step2.value;
-
-                var li = document.createElement('li');
-                li.appendChild(document.createTextNode(row[this.options.displayedProperty]));
-                li.addEventListener('click', this.clickEvent.bind(this));
-                li.listRow = row;
-                this.elementsList.appendChild(li);
-            }
-        } catch (err) {
-            _didIteratorError2 = true;
-            _iteratorError2 = err;
-        } finally {
-            try {
-                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                    _iterator2.return();
-                }
-            } finally {
-                if (_didIteratorError2) {
-                    throw _iteratorError2;
-                }
-            }
-        }
-
-        this.setActiveElement(this.elementsList.firstChild);
-
-        if (!this.isDropdownCreated) {
-            this._showDropdown();
+    _validate: function _validate() {
+        if (!this.selected) {
+            this.input.className += ' error';
         }
     },
-    clickEvent: function clickEvent(event) {
-        this.input.value = event.target.innerHTML;
-        this.selected = event.target.listRow;
-        this._removeDropdown();
-        event.stopPropagation();
-    },
-    setActiveElement: function setActiveElement(elem) {
-        if (this.activeElement) this.activeElement.className = '';
-        elem.className = 'active';
-        this.activeElement = elem;
-    },
-    _keyDownEvent: function _keyDownEvent(event) {
-        switch (event.keyCode) {
-            case keynumCodes.DOWN:
-                if (!this.activeElement.nextSibling) return;
-                this.setActiveElement(this.activeElement.nextSibling);
-                break;
-            case keynumCodes.UP:
-                if (!this.activeElement.previousSibling) return;
-                this.setActiveElement(this.activeElement.previousSibling);
-                break;
-            case keynumCodes.ENTER:
-                this.input.value = this.activeElement.listRow[this.options.displayedProperty];
-                this._removeDropdown();
-                break;
+    _onFocusEvent: function _onFocusEvent() {
+        document.body.addEventListener('click', this._finishTyping);
+        this.input.className = 'autocomplete';
 
-        }
+        if (!this.selected && this.lastSearch) this.dropdown.showList(this.lastSearch.result);
+    },
+    _finishTyping: function _finishTyping() {
+        this.dropdown.remove();
+        this._validate();
+        document.body.removeEventListener('click', this._finishTyping);
     }
 };
 
