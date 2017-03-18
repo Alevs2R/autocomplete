@@ -12,15 +12,15 @@
   font-weight: normal;
   overflow-y: auto;
   box-sizing: border-box;
-
+  padding: 0 0 5px 0;
 
   ul{
-    width: 300px;
     max-height: 450px;
-    padding: 0 0 5px 0;
+    padding: 0;
     text-align: left;
     list-style-type: none;
     margin: 0;
+    display: inline-block;
   }
 
   div{
@@ -35,6 +35,11 @@
       color: #fff;
     }
   }
+}
+
+.autocomplete-summary{
+  font-size: 13px;
+  line-height: 16px;
 }
 
 

@@ -20,8 +20,7 @@ function AutocompleteFactory(elem, options) {
 const _options = {
     'source': null,
     'arrow': false,
-    'minResults': 5,
-    'maxResults': 20,
+    'maxResults': 5,
     'minHeight': 200,
     'maxHeight': 450,
     'displayedProperty': "value",
@@ -31,8 +30,9 @@ const _options = {
     'sortBy': null,
     'sortOrder': 'asc',
     'isValidElement': ()=>true,
-    'searchByEntry': true,
+    'searchByEntry': false,
     'caseSensitive': false,
+    'wordEndings': null,
 };
 
 function Autocomplete(elem, options) {
@@ -186,7 +186,6 @@ Autocomplete.prototype = {
                     }
                 }
             }
-            if (result.length == this.options.maxResults) break;
         }
 
         this.lastSearch = {value, result};
@@ -194,7 +193,7 @@ Autocomplete.prototype = {
     },
     _search(value){
         this.selected = null;
-        this.dropdown.showList(this._getSearchResult(value.trim()));
+        this.dropdown.showList(this._getSearchResult(value.trim()), this.options.maxResults);
     },
 
     _validate(){
@@ -207,7 +206,8 @@ Autocomplete.prototype = {
         document.body.addEventListener('click', this._finishTyping);
         this.input.className = 'autocomplete';
 
-        if(!this.selected && this.lastSearch) this.dropdown.showList(this.lastSearch.result);
+        if(!this.selected && this.lastSearch) this.dropdown.showList(this.lastSearch.result, this.options.maxResults);
+        else this.input.select();
     },
 
     _finishTyping(){

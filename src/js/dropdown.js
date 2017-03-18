@@ -6,6 +6,8 @@ function Dropdown(baseElement, options) {
     this.baseElement = baseElement;
     this.position = options.dropdownPosition;
     this.displayedProperty = options.displayedProperty;
+    this.wordEndings = options.wordEndings;
+
 
     this.handleEvent = function (e) {
         switch (e.type) {
@@ -45,14 +47,14 @@ Dropdown.prototype = {
         this.isCreated = true;
     },
 
-    addElement(element){
+    _createElement(element){
         let val;
-        if(element.hasOwnProperty('search') && element.search.property == this.displayedProperty){
+        if (element.hasOwnProperty('search') && element.search.property == this.displayedProperty) {
             let str = element[this.displayedProperty];
             let {pos, length} = element.search;
-            val = str.substr(0, pos) + '<b>' + str.substr(pos,length) + '</b>' + str.substr(pos+length);
+            val = str.substr(0, pos) + '<b>' + str.substr(pos, length) + '</b>' + str.substr(pos + length);
         }
-        else{
+        else {
             val = element[this.displayedProperty];
         }
 
@@ -60,7 +62,18 @@ Dropdown.prototype = {
         li.innerHTML = val;
         li.addEventListener('click', this._clickEvent.bind(this));
         li.listRow = element;
-        this.elementsList.appendChild(li);
+
+        return li;
+    },
+
+    _createElementsList(elements){
+        let result = document.createElement('ul');
+
+        for (let row of elements) {
+            result.appendChild(this._createElement(row));
+        }
+
+        return result;
     },
 
     addEmptyMessage(){
@@ -69,7 +82,7 @@ Dropdown.prototype = {
         this.dropdown.appendChild(div);
     },
 
-    showList(list){
+    showList(list, maxResults = null){
         if (!this.isCreated) this._create();
         else {
             this.clear();
@@ -77,19 +90,32 @@ Dropdown.prototype = {
 
         if (list.length == 0) this.addEmptyMessage();
         else {
-            this.elementsList = document.createElement('ul');
-            this.dropdown.appendChild(this.elementsList);
-
-            for (let row of list) {
-                this.addElement(row);
+            if(maxResults == null || list.length <= maxResults) {
+                let ul = this._createElementsList(list);
+                this.setActiveElement(ul.firstChild);
+                this.dropdown.appendChild(ul);
+            } else {
+                let ul = this._createElementsList(list.slice(0, maxResults));
+                this.setActiveElement(ul.firstChild);
+                this.dropdown.appendChild(ul);
+                this.dropdown.appendChild(this._getSummary(maxResults, list.length));
             }
 
-            this.setActiveElement(this.elementsList.firstChild);
         }
+
 
         if (!this.isVisible) {
             this._show();
         }
+        else this._updateWidth();
+    },
+
+    _getSummary(num, total){
+        let div = document.createElement('div');
+        let text = 'Показано '+num+' из '+total+' найденных '+this.wordEndings[1]+'. Уточните запрос, чтобы увидеть остальные';
+        div.appendChild(document.createTextNode(text));
+        div.className = "autocomplete-summary";
+        return div;
     },
 
     _clickEvent(event){
@@ -118,11 +144,29 @@ Dropdown.prototype = {
         return {top: Math.round(top), bottom: Math.round(top) + elem.offsetHeight, left: Math.round(left)};
     },
 
+    _updateWidth(){
+        const WIDTH_INCREASE = 30;
+
+        let leftOffset = this.dropdown.coordLeft;
+
+        let maxWidth = document.body.clientWidth - leftOffset;
+        let minWidth = Math.min(this.baseElement.offsetWidth + WIDTH_INCREASE, maxWidth);
+
+        let width;
+        let ul = this.dropdown.getElementsByTagName('ul');
+        if(ul.length > 0){
+            this.dropdown.style.width = 'auto';
+            width = Math.min(Math.max(minWidth, ul[0].offsetWidth + 1), maxWidth);
+            ul[0].style.width = '100%';
+        }
+        else width = minWidth;
+        this.dropdown.style.width = width + 'px';
+    },
+
     _show(){
         if (!this.isCreated) return;
 
         const OFFSET_INPUT = 2;
-        const WIDTH_INCREASE = 30;
 
         let coords = this._getCoords(this.baseElement);
         let offsetBottom = document.body.clientHeight - coords.bottom;
@@ -135,12 +179,12 @@ Dropdown.prototype = {
             this.dropdown.style.top = (coords.top + this.baseElement.offsetHeight + OFFSET_INPUT) + "px";
             this.dropdown.style.maxHeight = this._getHeight(offsetBottom - OFFSET_INPUT) + 'px';
         }
-        let maxWidth = document.body.clientWidth - coords.left;
 
+        this.dropdown.coordLeft = coords.left;
         this.dropdown.style.left = coords.left + 'px';
-        this.dropdown.style.maxWidth = maxWidth + 'px';
-        this.dropdown.style.minWidth = Math.min(this.baseElement.offsetWidth + WIDTH_INCREASE, maxWidth) + 'px';
         this.dropdown.style.visibility = 'visible';
+
+        this._updateWidth();
 
         document.body.style.overflow = 'hidden';
 

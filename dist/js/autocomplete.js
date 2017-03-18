@@ -95,6 +95,7 @@ function Dropdown(baseElement, options) {
     this.baseElement = baseElement;
     this.position = options.dropdownPosition;
     this.displayedProperty = options.displayedProperty;
+    this.wordEndings = options.wordEndings;
 
     this.handleEvent = function (e) {
         switch (e.type) {
@@ -134,7 +135,7 @@ Dropdown.prototype = {
 
         this.isCreated = true;
     },
-    addElement: function addElement(element) {
+    _createElement: function _createElement(element) {
         var val = void 0;
         if (element.hasOwnProperty('search') && element.search.property == this.displayedProperty) {
             var str = element[this.displayedProperty];
@@ -151,7 +152,38 @@ Dropdown.prototype = {
         li.innerHTML = val;
         li.addEventListener('click', this._clickEvent.bind(this));
         li.listRow = element;
-        this.elementsList.appendChild(li);
+
+        return li;
+    },
+    _createElementsList: function _createElementsList(elements) {
+        var result = document.createElement('ul');
+
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = elements[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var row = _step.value;
+
+                result.appendChild(this._createElement(row));
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator.return) {
+                    _iterator.return();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
+        }
+
+        return result;
     },
     addEmptyMessage: function addEmptyMessage() {
         var div = document.createElement('div');
@@ -159,45 +191,35 @@ Dropdown.prototype = {
         this.dropdown.appendChild(div);
     },
     showList: function showList(list) {
+        var maxResults = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
         if (!this.isCreated) this._create();else {
             this.clear();
         }
 
         if (list.length == 0) this.addEmptyMessage();else {
-            this.elementsList = document.createElement('ul');
-            this.dropdown.appendChild(this.elementsList);
-
-            var _iteratorNormalCompletion = true;
-            var _didIteratorError = false;
-            var _iteratorError = undefined;
-
-            try {
-                for (var _iterator = list[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                    var row = _step.value;
-
-                    this.addElement(row);
-                }
-            } catch (err) {
-                _didIteratorError = true;
-                _iteratorError = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion && _iterator.return) {
-                        _iterator.return();
-                    }
-                } finally {
-                    if (_didIteratorError) {
-                        throw _iteratorError;
-                    }
-                }
+            if (maxResults == null || list.length <= maxResults) {
+                var ul = this._createElementsList(list);
+                this.setActiveElement(ul.firstChild);
+                this.dropdown.appendChild(ul);
+            } else {
+                var _ul = this._createElementsList(list.slice(0, maxResults));
+                this.setActiveElement(_ul.firstChild);
+                this.dropdown.appendChild(_ul);
+                this.dropdown.appendChild(this._getSummary(maxResults, list.length));
             }
-
-            this.setActiveElement(this.elementsList.firstChild);
         }
 
         if (!this.isVisible) {
             this._show();
-        }
+        } else this._updateWidth();
+    },
+    _getSummary: function _getSummary(num, total) {
+        var div = document.createElement('div');
+        var text = 'Показано ' + num + ' из ' + total + ' найденных ' + this.wordEndings[1] + '. Уточните запрос, чтобы увидеть остальные';
+        div.appendChild(document.createTextNode(text));
+        div.className = "autocomplete-summary";
+        return div;
     },
     _clickEvent: function _clickEvent(event) {
         this.select(event.target.listRow);
@@ -223,11 +245,27 @@ Dropdown.prototype = {
 
         return { top: Math.round(top), bottom: Math.round(top) + elem.offsetHeight, left: Math.round(left) };
     },
+    _updateWidth: function _updateWidth() {
+        var WIDTH_INCREASE = 30;
+
+        var leftOffset = this.dropdown.coordLeft;
+
+        var maxWidth = document.body.clientWidth - leftOffset;
+        var minWidth = Math.min(this.baseElement.offsetWidth + WIDTH_INCREASE, maxWidth);
+
+        var width = void 0;
+        var ul = this.dropdown.getElementsByTagName('ul');
+        if (ul.length > 0) {
+            this.dropdown.style.width = 'auto';
+            width = Math.min(Math.max(minWidth, ul[0].offsetWidth + 1), maxWidth);
+            ul[0].style.width = '100%';
+        } else width = minWidth;
+        this.dropdown.style.width = width + 'px';
+    },
     _show: function _show() {
         if (!this.isCreated) return;
 
         var OFFSET_INPUT = 2;
-        var WIDTH_INCREASE = 30;
 
         var coords = this._getCoords(this.baseElement);
         var offsetBottom = document.body.clientHeight - coords.bottom;
@@ -239,12 +277,12 @@ Dropdown.prototype = {
             this.dropdown.style.top = coords.top + this.baseElement.offsetHeight + OFFSET_INPUT + "px";
             this.dropdown.style.maxHeight = this._getHeight(offsetBottom - OFFSET_INPUT) + 'px';
         }
-        var maxWidth = document.body.clientWidth - coords.left;
 
+        this.dropdown.coordLeft = coords.left;
         this.dropdown.style.left = coords.left + 'px';
-        this.dropdown.style.maxWidth = maxWidth + 'px';
-        this.dropdown.style.minWidth = Math.min(this.baseElement.offsetWidth + WIDTH_INCREASE, maxWidth) + 'px';
         this.dropdown.style.visibility = 'visible';
+
+        this._updateWidth();
 
         document.body.style.overflow = 'hidden';
 
@@ -333,8 +371,7 @@ function AutocompleteFactory(elem, options) {
 var _options = {
     'source': null,
     'arrow': false,
-    'minResults': 5,
-    'maxResults': 20,
+    'maxResults': 5,
     'minHeight': 200,
     'maxHeight': 450,
     'displayedProperty': "value",
@@ -346,8 +383,9 @@ var _options = {
     'isValidElement': function isValidElement() {
         return true;
     },
-    'searchByEntry': true,
-    'caseSensitive': false
+    'searchByEntry': false,
+    'caseSensitive': false,
+    'wordEndings': null
 };
 
 function Autocomplete(elem, options) {
@@ -503,7 +541,6 @@ Autocomplete.prototype = {
                         }
                     }
                 }
-                if (result.length == this.options.maxResults) break;
             }
         } catch (err) {
             _didIteratorError = true;
@@ -525,7 +562,7 @@ Autocomplete.prototype = {
     },
     _search: function _search(value) {
         this.selected = null;
-        this.dropdown.showList(this._getSearchResult(value.trim()));
+        this.dropdown.showList(this._getSearchResult(value.trim()), this.options.maxResults);
     },
     _validate: function _validate() {
         if (!this.selected) {
@@ -536,7 +573,7 @@ Autocomplete.prototype = {
         document.body.addEventListener('click', this._finishTyping);
         this.input.className = 'autocomplete';
 
-        if (!this.selected && this.lastSearch) this.dropdown.showList(this.lastSearch.result);
+        if (!this.selected && this.lastSearch) this.dropdown.showList(this.lastSearch.result, this.options.maxResults);else this.input.select();
     },
     _finishTyping: function _finishTyping() {
         this.dropdown.remove();
