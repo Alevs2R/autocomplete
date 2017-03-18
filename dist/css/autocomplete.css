@@ -38,14 +38,13 @@ body {
   font-size: 14px;
   font-weight: normal;
   overflow-y: auto;
-  box-sizing: border-box;
-  padding: 0 0 5px 0; }
+  box-sizing: border-box; }
   .autocomplete-dropdown ul {
     max-height: 450px;
-    padding: 0;
     text-align: left;
+    margin: 0 0 5px 0;
     list-style-type: none;
-    margin: 0;
+    padding: 0;
     display: inline-block; }
   .autocomplete-dropdown div {
     color: #828282;
@@ -56,9 +55,11 @@ body {
       background: #559ad8;
       color: #fff; }
 
-.autocomplete-summary {
+div.autocomplete-summary {
   font-size: 13px;
-  line-height: 16px; }
+  line-height: 16px;
+  margin: 0 0 5px 0;
+  padding-top: 0; }
 
 .autocomplete {
   color: #404040;

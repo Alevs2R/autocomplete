@@ -215,6 +215,7 @@ Dropdown.prototype = {
     },
 
     select(){
+        // callback, should be set by client
     },
 
     _keyDownEvent(event){
