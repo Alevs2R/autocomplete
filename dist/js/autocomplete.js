@@ -373,6 +373,7 @@ Dropdown.prototype = {
     },
     clear: function clear() {
         this.isLoaderShown = false;
+        this.activeElement = null;
         if (!this.isCreated) this._create();else {
             this.dropdown.innerHTML = '';
         }
@@ -383,14 +384,15 @@ Dropdown.prototype = {
     _keyDownEvent: function _keyDownEvent(event) {
         switch (event.keyCode) {
             case keynumCodes.DOWN:
-                if (!this.activeElement.nextSibling) return;
+                if (!this.activeElement || !this.activeElement.nextSibling) return;
                 this.setActiveElement(this.activeElement.nextSibling);
                 break;
             case keynumCodes.UP:
-                if (!this.activeElement.previousSibling) return;
+                if (!this.activeElement || !this.activeElement.previousSibling) return;
                 this.setActiveElement(this.activeElement.previousSibling);
                 break;
             case keynumCodes.ENTER:
+                if (!this.activeElement) return;
                 this.select(this.activeElement.listRow);
                 break;
             case keynumCodes.ESC:
@@ -398,6 +400,7 @@ Dropdown.prototype = {
                 break;
 
         }
+        event.preventDefault();
     }
 };
 
