@@ -1,3 +1,7 @@
+/*
+@author Alexey Evlampev
+ */
+
 require('../scss/core.scss');
 import Dropdown from "./dropdown";
 

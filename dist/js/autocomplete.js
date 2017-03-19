@@ -103,13 +103,6 @@ function Dropdown(baseElement, options) {
     this.elementsList = null;
     this.dropdown = null;
     this.isLoaderShown = false;
-
-    this.handleEvent = function (e) {
-        switch (e.type) {
-            case "keydown":
-                this._keyDownEvent(e);
-        }
-    };
 }
 
 var NOTHING_FOUND = 'Не найдено';

@@ -1,3 +1,7 @@
+/*
+@author Alexey Evlampev
+ */
+
 export default Dropdown;
 
 function Dropdown(baseElement, options) {
@@ -15,14 +19,6 @@ function Dropdown(baseElement, options) {
     this.elementsList = null;
     this.dropdown = null;
     this.isLoaderShown = false;
-
-
-    this.handleEvent = function (e) {
-        switch (e.type) {
-            case "keydown":
-                this._keyDownEvent(e);
-        }
-    };
 }
 
 const NOTHING_FOUND = 'Не найдено';
