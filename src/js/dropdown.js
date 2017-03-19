@@ -9,10 +9,17 @@ function Dropdown(baseElement, options) {
     this.wordEndings = options.wordEndings;
 
 
+    this.isCreated = false;
+    this.isVisible = false;
+    this.activeElement = undefined;
+    this.elementsList = null;
+    this.dropdown = null;
+    this.isLoaderShown = false;
+
+
     this.handleEvent = function (e) {
         switch (e.type) {
             case "keydown":
-                console.log('dropdown keydown');
                 this._keyDownEvent(e);
         }
     };
@@ -31,13 +38,6 @@ const keynumCodes = {
 const loader = '<svg class="circle" width="16" height="16"><circle class="path" cx="8" cy="8" r="6" stroke-miterlimit="10"/></svg>';
 
 Dropdown.prototype = {
-
-    isCreated: false,
-    isVisible: false,
-    activeElement: undefined,
-    elementsList: null,
-    dropdown: null,
-    isLoaderShown: false,
 
     _create(){
         let dropdown = document.createElement('div');
@@ -78,10 +78,10 @@ Dropdown.prototype = {
             result.appendChild(this._createElement(row));
         }
 
-        result.addEventListener('mouseover', function(){
+        result.addEventListener('mouseover', function () {
             document.body.style.overflow = 'hidden';
         });
-        result.addEventListener('mouseout', function(){
+        result.addEventListener('mouseout', function () {
             document.body.style.overflow = 'auto';
         });
 
@@ -105,9 +105,7 @@ Dropdown.prototype = {
     },
 
     showLoader(){
-        console.log('show loader');
-
-        if(this.isLoaderShown) return;
+        if (this.isLoaderShown) return;
         this.clear();
         this.dropdown.appendChild(this._createLoader());
         this._show();
@@ -140,7 +138,7 @@ Dropdown.prototype = {
 
         if (list.length == 0) this.dropdown.appendChild(this._createEmptyMessage());
         else {
-            if(maxResults == null || list.length <= maxResults) {
+            if (maxResults == null || list.length <= maxResults) {
                 let ul = this._createElementsList(list);
                 this.dropdown.appendChild(ul);
                 this.setActiveElement(ul.firstChild);
@@ -156,15 +154,15 @@ Dropdown.prototype = {
 
 
         //if (!this.isVisible) {
-            this._show();
+        this._show();
         //}
         //else this._updateWidth();
     },
 
     _getSummary(num, total){
         let div = document.createElement('div');
-        let str = (total % 100 != 11 && total % 10 == 1) ? 'найденного '+this.wordEndings[0] : 'найденных '+this.wordEndings[1];
-        let text = 'Показано '+num+' из '+total+' '+str+'. Уточните запрос, чтобы увидеть остальные';
+        let str = (total % 100 != 11 && total % 10 == 1) ? 'найденного ' + this.wordEndings[0] : 'найденных ' + this.wordEndings[1];
+        let text = 'Показано ' + num + ' из ' + total + ' ' + str + '. Уточните запрос, чтобы увидеть остальные';
         div.appendChild(document.createTextNode(text));
         div.className = "autocomplete-summary";
         return div;
@@ -206,7 +204,7 @@ Dropdown.prototype = {
 
         let width;
         let ul = this.dropdown.getElementsByTagName('ul');
-        if(ul.length > 0){
+        if (ul.length > 0) {
             this.dropdown.style.width = 'auto';
             width = Math.min(Math.max(minWidth, ul[0].offsetWidth + 1), maxWidth);
             ul[0].style.width = '100%';
@@ -220,8 +218,8 @@ Dropdown.prototype = {
     _setListHeight(totalHeight){
         const summaryHeight = 42;
         let ul = this.dropdown.getElementsByTagName('ul');
-        if(ul.length > 0){
-            if(this.dropdown.getElementsByTagName('div').length > 0){
+        if (ul.length > 0) {
+            if (this.dropdown.getElementsByTagName('div').length > 0) {
                 ul[0].style.maxHeight = (totalHeight - summaryHeight) + 'px';
             }
             else ul[0].style.maxHeight = totalHeight + 'px';
@@ -264,10 +262,10 @@ Dropdown.prototype = {
         let offsetTop = elem.offsetTop,
             offsetBottom = offsetTop + 30;
         let ul = this.dropdown.getElementsByTagName('ul')[0];
-        if(ul.scrollTop + ul.clientHeight < offsetBottom) {
+        if (ul.scrollTop + ul.clientHeight < offsetBottom) {
             ul.scrollTop = offsetBottom - ul.clientHeight;
         }
-        else if(offsetTop < ul.scrollTop) {
+        else if (offsetTop < ul.scrollTop) {
             ul.scrollTop = offsetTop;
         }
     },
@@ -312,7 +310,7 @@ Dropdown.prototype = {
                 this.setActiveElement(this.activeElement.previousSibling);
                 break;
             case keynumCodes.ENTER:
-                if(this.onEnterClick) this.onEnterClick();
+                if (this.onEnterClick) this.onEnterClick();
                 break;
             case keynumCodes.ESC:
                 this.remove();
@@ -321,7 +319,7 @@ Dropdown.prototype = {
                 preventdef = false;
                 break;
         }
-        if(preventdef) event.preventDefault();
+        if (preventdef) event.preventDefault();
     },
 
 }

@@ -97,10 +97,16 @@ function Dropdown(baseElement, options) {
     this.displayedProperty = options.displayedProperty;
     this.wordEndings = options.wordEndings;
 
+    this.isCreated = false;
+    this.isVisible = false;
+    this.activeElement = undefined;
+    this.elementsList = null;
+    this.dropdown = null;
+    this.isLoaderShown = false;
+
     this.handleEvent = function (e) {
         switch (e.type) {
             case "keydown":
-                console.log('dropdown keydown');
                 this._keyDownEvent(e);
         }
     };
@@ -119,14 +125,6 @@ var keynumCodes = {
 var loader = '<svg class="circle" width="16" height="16"><circle class="path" cx="8" cy="8" r="6" stroke-miterlimit="10"/></svg>';
 
 Dropdown.prototype = {
-
-    isCreated: false,
-    isVisible: false,
-    activeElement: undefined,
-    elementsList: null,
-    dropdown: null,
-    isLoaderShown: false,
-
     _create: function _create() {
         var dropdown = document.createElement('div');
         dropdown.className = 'autocomplete-dropdown';
@@ -212,8 +210,6 @@ Dropdown.prototype = {
         return div;
     },
     showLoader: function showLoader() {
-        console.log('show loader');
-
         if (this.isLoaderShown) return;
         this.clear();
         this.dropdown.appendChild(this._createLoader());
@@ -446,10 +442,10 @@ __webpack_require__(1);
 
 module.exports = AutocompleteFactory;
 
-var console = window.console;
-
 // extend objects
-function extend(a, b) {
+function extend(s, b) {
+    var a = {};
+    Object.assign(a, s);
     for (var prop in b) {
         a[prop] = b[prop];
     }
@@ -460,7 +456,7 @@ function AutocompleteFactory(elem, options) {
     return new Autocomplete(elem, options);
 }
 
-var _options = {
+var defaultOptions = {
     'source': null,
     'arrow': false,
     'maxResults': 5,
@@ -482,22 +478,19 @@ var _options = {
 
 function Autocomplete(elem, options) {
 
-    this.options = extend(this.options, options);
+    this.options = extend(defaultOptions, options);
 
     try {
         this.setInput(elem);
         this.setData(this.options.source);
     } catch (err) {
-        console.error(err);
+        window.console.error(err);
         return;
     }
 
     this.dropdown = new _dropdown2.default(this.input, this.options);
 
-    this.dropdown.select = function (element) {
-        this.input.value = element[this.options.displayedProperty];
-        this.selected = element;
-    }.bind(this);
+    this.dropdown.select = this._selectElement.bind(this);
 
     this.dropdown.reload = function () {
         this._search(this.input.value);
@@ -515,17 +508,18 @@ function Autocomplete(elem, options) {
                 break;
             case "keydown":
                 this._keyDownEvent(e);
+                break;
         }
     };
 
-    this._finishTyping = this._finishTyping.bind(this);
+    this._onClickOutside = this._onClickOutside.bind(this);
+
+    this.lastSearch = null;
+    this.selected = undefined;
+    this.sourceIsDynamic = false;
 }
 
 Autocomplete.prototype = {
-    options: _options,
-    lastSearch: null,
-    selected: undefined,
-    sourceIsDynamic: false,
     messages: {
         error: 'Выберите значение из списка',
         warning: 'Значения нет в справочнике. <br> Возможно, вы ошиблись в написании'
@@ -563,18 +557,25 @@ Autocomplete.prototype = {
     setInput: function setInput(elem) {
         if (typeof elem == 'string') this.input = document.querySelector(elem);else if (elem.hasOwnProperty('tagName') && elem.tagName == 'input') this.input = elem;else throw '1 argument should be String or instance of Element with tagName input';
     },
+    _selectElement: function _selectElement(element) {
+        this.input.value = element[this.options.displayedProperty];
+        this.selected = element;
+        this._finishTyping();
+        this.onselect(element);
+    },
+    onselect: function onselect() {
+        // callback, should be set by client
+    },
     _bindInputEvents: function _bindInputEvents() {
         this.input.addEventListener("input", this, false);
         this.input.addEventListener("focus", this, false);
-        this.input.addEventListener("click", function (e) {
-            e.stopPropagation();
-        });
     },
     _keyDownEvent: function _keyDownEvent(event) {
         if (this.dropdown.isVisible) this.dropdown.keyDownEvent(event);
         if (event.keyCode == 9 || event.keyCode == 13) {
             // tab or enter
             this._finishTyping();
+            this._focusToNextControl();
         }
     },
     _makeRequest: function _makeRequest(url) {
@@ -722,7 +723,7 @@ Autocomplete.prototype = {
             } else {
                 if (this.data) this.dropdown.showList(this._getSearchResult(value.trim()), this.options.maxResults);else {
                     this._loadData(this.source).then(function (data) {
-                        _this.data = data;
+                        _this.data = _this.sort(data);
                         _this.dropdown.showList(_this._getSearchResult(value.trim()), _this.options.maxResults);
                     }, this.options.maxResults).catch(function (err) {
                         return _this.dropdown.showError();
@@ -743,7 +744,7 @@ Autocomplete.prototype = {
         } else this.input.classList.add('fulfilled');
     },
     _onFocusEvent: function _onFocusEvent() {
-        document.body.addEventListener('click', this._finishTyping);
+        document.body.addEventListener('click', this._onClickOutside);
         this.input.className = 'autocomplete';
         if (this.messageUnderInput) {
             this.input.parentNode.removeChild(this.messageUnderInput);
@@ -756,20 +757,23 @@ Autocomplete.prototype = {
 
         document.addEventListener('keydown', this);
     },
+    _onClickOutside: function _onClickOutside(event) {
+        if (event.target == this.input) return;
+        this._finishTyping();
+    },
     _finishTyping: function _finishTyping() {
+
         if (!this.dataRequestFinished) this._abortRequest();
 
         if (!this.selected && this.lastSearch && this.lastSearch.result.length == 1) {
             var elem = this.lastSearch.result[0];
-            this.input.value = elem[this.options.displayedProperty];
-            this.selected = elem;
+            this._selectElement(elem);
         }
         this.dropdown.remove();
         this._validate();
-        document.body.removeEventListener('click', this._finishTyping);
+        document.body.removeEventListener('click', this._onClickOutside);
         document.removeEventListener('keydown', this);
-
-        this._focusToNextControl();
+        this.input.removeEventListener('click', this);
     },
     _showUnderInput: function _showUnderInput(text, className) {
         var div = document.createElement('div');

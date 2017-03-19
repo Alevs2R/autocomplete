@@ -11,7 +11,7 @@
 <div class="content">
     <section>
         <h1>Автокомплит <span>Autocomplete</span></h1>
-                            <p>             Поле ввода с подсказками на чистом JavaScript</p>
+        <p> Поле ввода с подсказками на чистом JavaScript</p>
     </section>
     <section>
         <h2>Пример</h2>
@@ -26,10 +26,11 @@
     <section class="install">
         <h2>Установка</h2>
         <h3>1. Подключите JS и CSS файлы</h3>
-        <p>Собранные и минифицированные файлы содержатся в папке <a href="">dist/</a> в <a href="">GitHub</a>
+        <p>Собранные и минифицированные файлы содержатся в папке <a href="https://github.com/Alevs2R/autocomplete/tree/master/dist">dist/</a> в <a href="https://github.com/Alevs2R/autocomplete">GitHub</a>
             репозитории.
             Скопируйте содержимое папки в ваш проект.
-            Sass и исходные JS файлы содержатся в папке <a href="">src/</a>, но перед использованием их необходимо собрать.
+            Sass и исходные JS файлы содержатся в папке <a href="https://github.com/Alevs2R/autocomplete/tree/master/src">src/</a>, но перед использованием их необходимо
+            собрать.
         </p>
         <p>Вставьте данные строчки кода в ваш HTML</p>
 
@@ -53,9 +54,23 @@
                 class="language-markup">&lt;/body&gt;</code></p>
 
         <h3>2. Вставьте HTML</h3>
-        <pre class="  language-markup"><code class="  language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>autocomplete-wrapper<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
-    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>city<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>text<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>autocomplete<span class="token punctuation">"</span></span> <span class="token attr-name">placeholder</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>Начните вводить код или название<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
-<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span></code></pre>
+        <pre class="  language-markup"><code class="  language-markup"><span class="token tag"><span
+                class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span
+                class="token attr-value"><span class="token punctuation">=</span><span
+                class="token punctuation">"</span>autocomplete-wrapper<span
+                class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span
+            class="token attr-name">id</span><span class="token attr-value"><span
+            class="token punctuation">=</span><span class="token punctuation">"</span>city<span
+            class="token punctuation">"</span></span> <span class="token attr-name">type</span><span
+            class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>text<span
+            class="token punctuation">"</span></span> <span class="token attr-name">class</span><span
+            class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>autocomplete<span
+            class="token punctuation">"</span></span> <span class="token attr-name">placeholder</span><span
+            class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>Начните вводить код или название<span
+            class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span
+        class="token punctuation">&gt;</span></span></code></pre>
         <h3>3. Инициализируйте JS</h3>
         <pre><code class="language-javascript">Autocomplete('.autocomplete', {source: 'kladr.json', displayedProperty: 'City'});</code></pre>
         <p>
@@ -83,7 +98,8 @@
                 <td>null</td>
                 <td>
                     Ссылка на источник данных в формате JSON или массив. Если это массив строк, опция displayedProperty
-                    игнорируется. Функция принимает первым аргументом строку запроса и должна возвращать адрес источника данных.
+                    игнорируется. Функция принимает первым аргументом строку запроса и должна возвращать адрес источника
+                    данных.
                 </td>
             </tr>
             <tr>
@@ -107,7 +123,7 @@
                 <td>Array(2)</td>
                 <td>null</td>
                 <td>
-                    Слова в родительном падеже (обозначают сущность поиска). Например, ['города','городов']. Используется, если автокомплит без стрелки.
+                    Слова в родительном падеже (обозначают сущность поиска). Например, ['города','городов'].
                 </td>
             </tr>
             <tr>
@@ -164,7 +180,8 @@
                 <td>function</td>
                 <td>всегда true</td>
                 <td>
-                    Функция для фильтрации некорректных значений. Должна возвращать false, если передаваемый объект не должен участовать в поиске
+                    Функция для фильтрации некорректных значений. Должна возвращать false, если передаваемый объект не
+                    должен участовать в поиске
                 </td>
             </tr>
             <tr>
@@ -172,11 +189,62 @@
                 <td>true, false</td>
                 <td>false</td>
                 <td>
-                     Если true, разрешается указывать свое значение, при этом выводится предупреждение
+                    Если true, разрешается указывать свое значение, при этом выводится предупреждение
+                </td>
+            </tr>
+            <tr>
+                <td>minHeight</td>
+                <td>Number</td>
+                <td>200</td>
+                <td>
+                    Минимальная высота, в которую будет может уместиться выпадающий список. Если снизу столько пространства нет - список покажется сверху
+                    (пикс.)
+                </td>
+            </tr>
+            <tr>
+                <td>maxHeight</td>
+                <td>Number</td>
+                <td>450</td>
+                <td>
+                    Максимальная высота выпадающего списка (пикс.)
                 </td>
             </tr>
             </tbody>
         </table>
+    </section>
+    <section>
+        <h2>События</h2>
+        <h3>onselect</h3>
+        <p>
+            Событие возникает, когда был выбран или введён элемент из списка. Обработать событие можно, установив callback на onselect
+        </p>
+        <pre class="  language-javascript"><code class=" language-javascript"><span class="token keyword">var</span> cityAutocomplete <span class="token operator">=</span> <span class="token function">Autocomplete</span><span class="token punctuation">(</span><span class="token string">'.autocomplete'</span><span class="token punctuation">,</span> options<span class="token punctuation">)</span><span class="token punctuation">;</span>
+cityAutocomplete<span class="token punctuation">.</span>onselect <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>element<span class="token punctuation">)</span><span class="token punctuation">{</span>
+  console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>element<span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// Object {Id: 123, City: "Екатеринбург"}</span></code></pre>
+
+    </section>
+
+    <section>
+        <h2>Сборка</h2>
+        <p>Собрать исходный код проекта можно с помощью npm</p>
+        <pre class="  language-bash"><code class="  language-bash"><span class="token function">cd</span> /path/to/project
+<span class="token function">npm</span> <span class="token function">install</span>
+<span class="token function">npm</span> build</code></pre>
+        <p>При вызове команды <code class="language-bash">npm build:prod</code> будут сгенерированы минифицированные файлы</p>
+    </section>
+
+    <section>
+        <h2>Дополнительные примеры</h2>
+        <p>Автокомплит с поиском по вхождению</p>
+        <div class="demo">
+            <label for="city">Город</label>
+            <div class="autocomplete-wrapper">
+                <input id="searchByEntry" type="text" class="autocomplete" placeholder="Начните вводить код или название">
+            </div>
+        </div>
     </section>
 
     <footer>

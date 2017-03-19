@@ -25,3 +25,6 @@ var options = {
 };
 
 Autocomplete('.autocomplete', options);
+
+options.searchByEntry = true;
+Autocomplete('#searchByEntry', options);
