@@ -18,6 +18,7 @@ function Dropdown(baseElement, options) {
 }
 
 const NOTHING_FOUND = 'Не найдено';
+const LOADING = 'Загрузка';
 
 const keynumCodes = {
     UP: 38,
@@ -26,6 +27,8 @@ const keynumCodes = {
     ESC: 27
 };
 
+const loader = '<svg class="circle" width="16" height="16"><circle class="path" cx="8" cy="8" r="6" stroke-miterlimit="10"/></svg>';
+
 Dropdown.prototype = {
 
     isCreated: false,
@@ -33,6 +36,7 @@ Dropdown.prototype = {
     activeElement: undefined,
     elementsList: null,
     dropdown: null,
+    isLoaderShown: false,
 
     _create(){
         let dropdown = document.createElement('div');
@@ -73,46 +77,91 @@ Dropdown.prototype = {
             result.appendChild(this._createElement(row));
         }
 
+        result.addEventListener('mouseover', function(){
+            document.body.style.overflow = 'hidden';
+        });
+        result.addEventListener('mouseout', function(){
+            document.body.style.overflow = 'auto';
+        });
+
         return result;
     },
 
-    addEmptyMessage(){
+    _createLoader(){
+        let div = document.createElement('div');
+        div.className = "loader";
+        div.innerHTML = loader;
+        let span = document.createElement('span');
+        span.appendChild(document.createTextNode(LOADING));
+        div.appendChild(span);
+        return div;
+    },
+
+    _createEmptyMessage(){
         let div = document.createElement('div');
         div.appendChild(document.createTextNode(NOTHING_FOUND));
+        return div;
+    },
+
+    showLoader(){
+        if(this.isLoaderShown) return;
+        this.clear();
+        this.dropdown.appendChild(this._createLoader());
+        this._show();
+        this.isLoaderShown = true;
+    },
+
+    showError(){
+        const CONNECTION_ERROR = 'Что-то пошло не так. Проверьте соединение с интернетом и попробуйте еще раз';
+        const RELOAD = 'Обновить';
+
+        this.clear();
+        let div = document.createElement('div');
+        div.appendChild(document.createTextNode(CONNECTION_ERROR));
+
+        let reloadBtn = document.createElement('div');
+        reloadBtn.className = 'autocomplete-control';
+        reloadBtn.appendChild(document.createTextNode(RELOAD));
+
+        reloadBtn.addEventListener('click', function(){
+            this.reload();
+        }.bind(this));
+
         this.dropdown.appendChild(div);
+        this.dropdown.appendChild(reloadBtn);
+
+        this._show();
     },
 
     showList(list, maxResults = null){
-        if (!this.isCreated) this._create();
-        else {
-            this.clear();
-        }
+        this.clear();
 
-        if (list.length == 0) this.addEmptyMessage();
+        if (list.length == 0) this.dropdown.appendChild(this._createEmptyMessage());
         else {
             if(maxResults == null || list.length <= maxResults) {
                 let ul = this._createElementsList(list);
-                this.setActiveElement(ul.firstChild);
                 this.dropdown.appendChild(ul);
+                this.setActiveElement(ul.firstChild);
             } else {
                 let ul = this._createElementsList(list.slice(0, maxResults));
-                this.setActiveElement(ul.firstChild);
                 this.dropdown.appendChild(ul);
+                this.setActiveElement(ul.firstChild);
                 this.dropdown.appendChild(this._getSummary(maxResults, list.length));
             }
 
         }
 
 
-        if (!this.isVisible) {
+        //if (!this.isVisible) {
             this._show();
-        }
-        else this._updateWidth();
+        //}
+        //else this._updateWidth();
     },
 
     _getSummary(num, total){
         let div = document.createElement('div');
-        let text = 'Показано '+num+' из '+total+' найденных '+this.wordEndings[1]+'. Уточните запрос, чтобы увидеть остальные';
+        let str = (total % 100 != 11 && total % 10 == 1) ? 'найденного '+this.wordEndings[0] : 'найденных '+this.wordEndings[1];
+        let text = 'Показано '+num+' из '+total+' '+str+'. Уточните запрос, чтобы увидеть остальные';
         div.appendChild(document.createTextNode(text));
         div.className = "autocomplete-summary";
         return div;
@@ -158,9 +207,22 @@ Dropdown.prototype = {
             this.dropdown.style.width = 'auto';
             width = Math.min(Math.max(minWidth, ul[0].offsetWidth + 1), maxWidth);
             ul[0].style.width = '100%';
+            ul[0].style.display = 'block';
+
         }
         else width = minWidth;
         this.dropdown.style.width = width + 'px';
+    },
+
+    _setListHeight(totalHeight){
+        const summaryHeight = 42;
+        let ul = this.dropdown.getElementsByTagName('ul');
+        if(ul.length > 0){
+            if(this.dropdown.getElementsByTagName('div').length > 0){
+                ul[0].style.maxHeight = (totalHeight - summaryHeight) + 'px';
+            }
+            else ul[0].style.maxHeight = totalHeight + 'px';
+        }
     },
 
     _show(){
@@ -172,21 +234,20 @@ Dropdown.prototype = {
         let offsetBottom = document.body.clientHeight - coords.bottom;
 
         if (this.position == 'top' || (this.position == 'auto' && offsetBottom < this.minHeight)) {
-            this.dropdown.style.maxHeight = this._getHeight(coords.top - OFFSET_INPUT) + 'px';
+            this._setListHeight(this._getHeight(coords.top - OFFSET_INPUT));
             this.dropdown.style.bottom = document.body.clientHeight - coords.top + OFFSET_INPUT + 'px';
         }
         else {
             this.dropdown.style.top = (coords.top + this.baseElement.offsetHeight + OFFSET_INPUT) + "px";
-            this.dropdown.style.maxHeight = this._getHeight(offsetBottom - OFFSET_INPUT) + 'px';
+            this._setListHeight(this._getHeight(offsetBottom - OFFSET_INPUT));
         }
 
         this.dropdown.coordLeft = coords.left;
         this.dropdown.style.left = coords.left + 'px';
-        this.dropdown.style.visibility = 'visible';
 
         this._updateWidth();
 
-        document.body.style.overflow = 'hidden';
+        this.dropdown.style.visibility = 'visible';
 
         document.addEventListener('keydown', this);
 
@@ -198,6 +259,16 @@ Dropdown.prototype = {
         if (this.activeElement) this.activeElement.className = '';
         elem.className = 'active';
         this.activeElement = elem;
+
+        let offsetTop = elem.offsetTop,
+            offsetBottom = offsetTop + 30;
+        let ul = this.dropdown.getElementsByTagName('ul')[0];
+        if(ul.scrollTop + ul.clientHeight < offsetBottom) {
+            ul.scrollTop = offsetBottom - ul.clientHeight;
+        }
+        else if(offsetTop < ul.scrollTop) {
+            ul.scrollTop = offsetTop;
+        }
     },
 
     remove(){
@@ -211,7 +282,11 @@ Dropdown.prototype = {
     },
 
     clear(){
-        this.dropdown.innerHTML = '';
+        this.isLoaderShown = false;
+        if (!this.isCreated) this._create();
+        else {
+            this.dropdown.innerHTML = '';
+        }
     },
 
     select(){

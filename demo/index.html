@@ -39,7 +39,7 @@
                 class="token punctuation">"</span>stylesheet<span class="token punctuation">"</span></span> <span
                 class="token attr-name">href</span><span class="token attr-value"><span
                 class="token punctuation">=</span><span
-                class="token punctuation">"</span>path/to/autocmplete.min.css<span
+                class="token punctuation">"</span>path/to/autocomplete.min.css<span
                 class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span
         class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation">=</span><span
@@ -84,11 +84,19 @@
             <tbody>
             <tr>
                 <td>source (обязательная)</td>
-                <td>String или массив объектов (в частности, массив строк)</td>
+                <td>String, function или массив объектов (в частности, массив строк)</td>
                 <td>null</td>
                 <td>
                     Ссылка на источник данных в формате JSON или массив. Если это массив строк, опция displayedProperty
-                    игнорируется.
+                    игнорируется. Функция принимает первым аргументом строку запроса и должна возвращать адрес источника данных.
+                </td>
+            </tr>
+            <tr>
+                <td>arrow</td>
+                <td>true, false</td>
+                <td>false</td>
+                <td>
+                    Если true, автокомплит со стрелкой, иначе без
                 </td>
             </tr>
             <tr>
@@ -100,12 +108,76 @@
                 </td>
             </tr>
             <tr>
+                <td>wordEndings</td>
+                <td>Array(2)</td>
+                <td>null</td>
+                <td>
+                    Слова в родительном падеже (обозначают сущность поиска). Например, ['города','городов']. Используется, если автокомплит без стрелки.
+                </td>
+            </tr>
+            <tr>
                 <td>dropdownPosition</td>
                 <td>top, bottom, auto</td>
                 <td>auto</td>
                 <td>
                     Определяет, с какой стороны от поля ввода появится выпадающий список: сверху или снизу.
                     Если установлено <i>auto</i>, положение будет определяться автоматически.
+                </td>
+            </tr>
+            <tr>
+                <td>caseSensitive</td>
+                <td>true, false</td>
+                <td>false</td>
+                <td>
+                    Искать с учетом регистра или без (все строки приводятся к нижнему регистру)
+                </td>
+            </tr>
+            <tr>
+                <td>searchByEntry</td>
+                <td>true, false</td>
+                <td>false</td>
+                <td>
+                    Включает поиск по вхождению
+                </td>
+            </tr>
+            <tr>
+                <td>sort</td>
+                <td>true, false</td>
+                <td>false</td>
+                <td>
+                    Если true - список сортируется
+                </td>
+            </tr>
+            <tr>
+                <td>sortBy</td>
+                <td>String</td>
+                <td>displayedProperty</td>
+                <td>
+                    Свойство объекта, по которому идёт сортировка
+                </td>
+            </tr>
+            <tr>
+                <td>sortOrder</td>
+                <td>asc, desc</td>
+                <td>asc</td>
+                <td>
+                    Определяет порядок сортировки
+                </td>
+            </tr>
+            <tr>
+                <td>isValidElement</td>
+                <td>function</td>
+                <td>всегда true</td>
+                <td>
+                    Функция для фильтрации некорректных значений. Должна возвращать false, если передаваемый объект не должен участовать в поиске
+                </td>
+            </tr>
+            <tr>
+                <td>ownValue</td>
+                <td>true, false</td>
+                <td>false</td>
+                <td>
+                     Если true, разрешается указывать свое значение, при этом выводится предупреждение
                 </td>
             </tr>
             </tbody>

@@ -15,12 +15,13 @@ function isValidElement(el) {
 }
 
 var options = {
-    source: 'kladr.json',
+    source: () => 'kladr.json',
     displayedProperty: 'City',
     sort: true,
     isValidElement,
     showNumOfResults: true,
     wordEndings: ['города','городов'],
+    maxResults: 5
 };
 
 Autocomplete('.autocomplete', options);
