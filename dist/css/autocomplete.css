@@ -29,7 +29,7 @@ body {
   src: local("Segoe UI"), local("SegoeUI"), url("//i.s-microsoft.com/fonts/Segoe-UI/Cyrillic/Normal/latest.woff") format("woff"); }
 
 .loader span {
-  color: #828282;
+  color: gray;
   position: relative;
   top: -2px;
   margin-left: 5px; }
@@ -40,7 +40,7 @@ body {
 
 .loader .circle {
   fill: none;
-  stroke: #828282;
+  stroke: gray;
   stroke-width: 1.5px;
   stroke-dasharray: 10, 27;
   stroke-dashoffset: -37;
@@ -85,7 +85,7 @@ body {
     display: inline-block;
     overflow-y: auto; }
   .autocomplete-dropdown div {
-    color: #828282;
+    color: gray;
     padding: 5px; }
   .autocomplete-dropdown li {
     padding: 5px; }
@@ -128,6 +128,8 @@ div.autocomplete-control {
     color: #9c9c9c; }
   .autocomplete:hover {
     box-shadow: inset 0 1px 1px -1px #404040; }
+  .autocomplete.fulfilled {
+    box-shadow: inset 0 1px 1px -1px #737373; }
   .autocomplete:focus {
     outline: none;
     box-shadow: 0 0 0 1px #559ad8;
@@ -154,7 +156,11 @@ div.autocomplete-control {
 .autocomplete-wrapper {
   display: inline-block;
   vertical-align: middle;
-  position: relative; }
+  position: relative;
+  line-height: 20px;
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, Tahoma, sans-serif;
+  font-size: 14px;
+  font-weight: normal; }
   .autocomplete-wrapper.has-arrow:after {
     content: "\E04C";
     font-family: Icons;
@@ -168,5 +174,15 @@ div.autocomplete-control {
     background: none; }
   .autocomplete-wrapper.has-arrow input {
     padding-right: 30px; }
+
+.autocomplete-message {
+  position: absolute;
+  left: 0;
+  margin-top: 5px;
+  width: 100%; }
+  .autocomplete-message.warning {
+    color: #f49b27; }
+  .autocomplete-message.error {
+    color: #e01027; }
 
 /*# sourceMappingURL=autocomplete.css.map*/

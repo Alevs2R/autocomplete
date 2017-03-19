@@ -15,7 +15,7 @@ function isValidElement(el) {
 }
 
 var options = {
-    source: () => 'kladr.json',
+    source: 'kladr.json',
     displayedProperty: 'City',
     sort: true,
     isValidElement,

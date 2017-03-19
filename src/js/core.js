@@ -36,6 +36,7 @@ const _options = {
 };
 
 function Autocomplete(elem, options) {
+
     this.options = extend(this.options, options);
 
     try {
@@ -51,7 +52,6 @@ function Autocomplete(elem, options) {
     this.dropdown.select = function (element) {
         this.input.value = element[this.options.displayedProperty];
         this.selected = element;
-        this._finishTyping();
     }.bind(this);
 
     this.dropdown.reload = function(){
@@ -81,6 +81,10 @@ Autocomplete.prototype = {
     lastSearch: null,
     selected: undefined,
     sourceIsDynamic: false,
+    messages: {
+      error: 'Выберите значение из списка',
+      warning: 'Значения нет в справочнике. <br> Возможно, вы ошиблись в написании'
+    },
 
     setData(source){
         if (typeof source == 'string') {
@@ -130,6 +134,13 @@ Autocomplete.prototype = {
         });
     },
 
+    _keyDownEvent(event){
+            if(this.dropdown.isVisible) this.dropdown.keyDownEvent(event);
+            if(event.keyCode == 9 || event.keyCode == 13){ // tab or enter
+                this._finishTyping();
+            }
+    },
+
     _makeRequest(url){
         return new Promise(function (resolve, reject) {
             if(this.xhr) this.xhr.abort();
@@ -155,6 +166,11 @@ Autocomplete.prototype = {
             xhr.send();
             this.xhr = xhr;
         }.bind(this));
+    },
+
+    _abortRequest(){
+        if(this.xhr) this.xhr.abort();
+        this.dataRequestFinished = true;
     },
 
     _loadData(url){
@@ -268,24 +284,67 @@ Autocomplete.prototype = {
     _validate(){
         if (!this.selected) {
             if (this.options.ownValue) {
-                this.input.className += ' warning';
+                this.input.classList.add('warning');
+                this._showUnderInput(this.messages.warning, 'warning');
             }
-            else this.input.className += ' error';
+            else {
+                this.input.classList.add('error');
+                this._showUnderInput(this.messages.error, 'error');
+            }
         }
+        else this.input.classList.add('fulfilled');
     },
 
     _onFocusEvent(){
         document.body.addEventListener('click', this._finishTyping);
         this.input.className = 'autocomplete';
+        if(this.messageUnderInput){
+            this.input.parentNode.removeChild(this.messageUnderInput);
+            this.messageUnderInput = null;
+        }
 
         //if(!this.selected && this.lastSearch) this.dropdown.showList(this.lastSearch.result, this.options.maxResults);
         this.input.select();
+        this.lastSearch = null;
+
+        document.addEventListener('keydown', this);
     },
 
     _finishTyping(){
+        if(!this.dataRequestFinished) this._abortRequest();
+
+        if(!this.selected && this.lastSearch && this.lastSearch.result.length == 1){
+            let elem = this.lastSearch.result[0];
+            this.input.value = elem[this.options.displayedProperty];
+            this.selected = elem;
+        }
         this.dropdown.remove();
         this._validate();
         document.body.removeEventListener('click', this._finishTyping);
+        document.removeEventListener('keydown', this);
+
+        this._focusToNextControl();
+    },
+
+    _showUnderInput(text, className){
+        let div = document.createElement('div');
+        div.classList.add('autocomplete-message');
+        div.classList.add(className);
+        div.innerHTML = text;
+        div.style.top = this.input.offsetHeight;
+
+        this.input.parentNode.appendChild(div);
+        this.messageUnderInput = div;
+    },
+
+    _focusToNextControl(){
+        this.input.blur();
+        let next = document.querySelector('[tabIndex="' + (+this.input.tabIndex + 1) + '"]');
+        if(!next) {
+            let inputs = Array.prototype.slice.call(document.getElementsByTagName('input'));
+            next = inputs[inputs.indexOf(this.input) + 1];
+        }
+        if(next) next.focus();
     }
 
 };

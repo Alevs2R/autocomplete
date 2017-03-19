@@ -100,6 +100,7 @@ function Dropdown(baseElement, options) {
     this.handleEvent = function (e) {
         switch (e.type) {
             case "keydown":
+                console.log('dropdown keydown');
                 this._keyDownEvent(e);
         }
     };
@@ -211,6 +212,8 @@ Dropdown.prototype = {
         return div;
     },
     showLoader: function showLoader() {
+        console.log('show loader');
+
         if (this.isLoaderShown) return;
         this.clear();
         this.dropdown.appendChild(this._createLoader());
@@ -218,6 +221,8 @@ Dropdown.prototype = {
         this.isLoaderShown = true;
     },
     showError: function showError() {
+        var _this = this;
+
         var CONNECTION_ERROR = 'Что-то пошло не так. Проверьте соединение с интернетом и попробуйте еще раз';
         var RELOAD = 'Обновить';
 
@@ -230,8 +235,11 @@ Dropdown.prototype = {
         reloadBtn.appendChild(document.createTextNode(RELOAD));
 
         reloadBtn.addEventListener('click', function () {
-            this.reload();
-        }.bind(this));
+            return _this.reload();
+        });
+        this.onEnterClick = function () {
+            return _this.reload();
+        };
 
         this.dropdown.appendChild(div);
         this.dropdown.appendChild(reloadBtn);
@@ -239,6 +247,8 @@ Dropdown.prototype = {
         this._show();
     },
     showList: function showList(list) {
+        var _this2 = this;
+
         var maxResults = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
         this.clear();
@@ -254,6 +264,10 @@ Dropdown.prototype = {
                 this.setActiveElement(_ul.firstChild);
                 this.dropdown.appendChild(this._getSummary(maxResults, list.length));
             }
+
+            this.onEnterClick = function () {
+                return _this2.select(_this2.activeElement.listRow);
+            };
         }
 
         //if (!this.isVisible) {
@@ -343,8 +357,6 @@ Dropdown.prototype = {
 
         this.dropdown.style.visibility = 'visible';
 
-        document.addEventListener('keydown', this);
-
         this.isVisible = true;
         //TODO reaction on window resize
     },
@@ -362,14 +374,18 @@ Dropdown.prototype = {
             ul.scrollTop = offsetTop;
         }
     },
-    remove: function remove() {
-        if (!this.isCreated) return;
-        this.dropdown.parentNode.removeChild(this.dropdown);
-        document.body.style.overflow = 'auto';
-        document.removeEventListener('keydown', this);
-
+    _resetVars: function _resetVars() {
         this.isCreated = false;
         this.isVisible = false;
+        this.activeElement = null;
+        this.isLoaderShown = false;
+    },
+    remove: function remove() {
+        if (!this.isCreated) return;
+
+        this._resetVars();
+        this.dropdown.parentNode.removeChild(this.dropdown);
+        document.body.style.overflow = 'auto';
     },
     clear: function clear() {
         this.isLoaderShown = false;
@@ -381,7 +397,8 @@ Dropdown.prototype = {
     select: function select() {
         // callback, should be set by client
     },
-    _keyDownEvent: function _keyDownEvent(event) {
+    keyDownEvent: function keyDownEvent(event) {
+        var preventdef = true;
         switch (event.keyCode) {
             case keynumCodes.DOWN:
                 if (!this.activeElement || !this.activeElement.nextSibling) return;
@@ -392,15 +409,16 @@ Dropdown.prototype = {
                 this.setActiveElement(this.activeElement.previousSibling);
                 break;
             case keynumCodes.ENTER:
-                if (!this.activeElement) return;
-                this.select(this.activeElement.listRow);
+                if (this.onEnterClick) this.onEnterClick();
                 break;
             case keynumCodes.ESC:
                 this.remove();
                 break;
-
+            default:
+                preventdef = false;
+                break;
         }
-        event.preventDefault();
+        if (preventdef) event.preventDefault();
     }
 };
 
@@ -463,6 +481,7 @@ var _options = {
 };
 
 function Autocomplete(elem, options) {
+
     this.options = extend(this.options, options);
 
     try {
@@ -478,7 +497,6 @@ function Autocomplete(elem, options) {
     this.dropdown.select = function (element) {
         this.input.value = element[this.options.displayedProperty];
         this.selected = element;
-        this._finishTyping();
     }.bind(this);
 
     this.dropdown.reload = function () {
@@ -508,6 +526,10 @@ Autocomplete.prototype = {
     lastSearch: null,
     selected: undefined,
     sourceIsDynamic: false,
+    messages: {
+        error: 'Выберите значение из списка',
+        warning: 'Значения нет в справочнике. <br> Возможно, вы ошиблись в написании'
+    },
 
     setData: function setData(source) {
         if (typeof source == 'string') {
@@ -548,6 +570,13 @@ Autocomplete.prototype = {
             e.stopPropagation();
         });
     },
+    _keyDownEvent: function _keyDownEvent(event) {
+        if (this.dropdown.isVisible) this.dropdown.keyDownEvent(event);
+        if (event.keyCode == 9 || event.keyCode == 13) {
+            // tab or enter
+            this._finishTyping();
+        }
+    },
     _makeRequest: function _makeRequest(url) {
         return new Promise(function (resolve, reject) {
             if (this.xhr) this.xhr.abort();
@@ -573,6 +602,10 @@ Autocomplete.prototype = {
             xhr.send();
             this.xhr = xhr;
         }.bind(this));
+    },
+    _abortRequest: function _abortRequest() {
+        if (this.xhr) this.xhr.abort();
+        this.dataRequestFinished = true;
     },
     _loadData: function _loadData(url) {
         var that = this;
@@ -701,21 +734,61 @@ Autocomplete.prototype = {
     _validate: function _validate() {
         if (!this.selected) {
             if (this.options.ownValue) {
-                this.input.className += ' warning';
-            } else this.input.className += ' error';
-        }
+                this.input.classList.add('warning');
+                this._showUnderInput(this.messages.warning, 'warning');
+            } else {
+                this.input.classList.add('error');
+                this._showUnderInput(this.messages.error, 'error');
+            }
+        } else this.input.classList.add('fulfilled');
     },
     _onFocusEvent: function _onFocusEvent() {
         document.body.addEventListener('click', this._finishTyping);
         this.input.className = 'autocomplete';
+        if (this.messageUnderInput) {
+            this.input.parentNode.removeChild(this.messageUnderInput);
+            this.messageUnderInput = null;
+        }
 
         //if(!this.selected && this.lastSearch) this.dropdown.showList(this.lastSearch.result, this.options.maxResults);
         this.input.select();
+        this.lastSearch = null;
+
+        document.addEventListener('keydown', this);
     },
     _finishTyping: function _finishTyping() {
+        if (!this.dataRequestFinished) this._abortRequest();
+
+        if (!this.selected && this.lastSearch && this.lastSearch.result.length == 1) {
+            var elem = this.lastSearch.result[0];
+            this.input.value = elem[this.options.displayedProperty];
+            this.selected = elem;
+        }
         this.dropdown.remove();
         this._validate();
         document.body.removeEventListener('click', this._finishTyping);
+        document.removeEventListener('keydown', this);
+
+        this._focusToNextControl();
+    },
+    _showUnderInput: function _showUnderInput(text, className) {
+        var div = document.createElement('div');
+        div.classList.add('autocomplete-message');
+        div.classList.add(className);
+        div.innerHTML = text;
+        div.style.top = this.input.offsetHeight;
+
+        this.input.parentNode.appendChild(div);
+        this.messageUnderInput = div;
+    },
+    _focusToNextControl: function _focusToNextControl() {
+        this.input.blur();
+        var next = document.querySelector('[tabIndex="' + (+this.input.tabIndex + 1) + '"]');
+        if (!next) {
+            var inputs = Array.prototype.slice.call(document.getElementsByTagName('input'));
+            next = inputs[inputs.indexOf(this.input) + 1];
+        }
+        if (next) next.focus();
     }
 };
 

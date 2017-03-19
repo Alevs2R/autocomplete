@@ -53,14 +53,9 @@
                 class="language-markup">&lt;/body&gt;</code></p>
 
         <h3>2. Вставьте HTML</h3>
-        <pre class="  language-markup"><code class="  language-markup"><span class="token tag"><span
-                class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">class</span><span
-                class="token attr-value"><span class="token punctuation">=</span><span
-                class="token punctuation">"</span>autocomplete<span class="token punctuation">"</span></span> <span
-                class="token attr-name">type</span><span class="token attr-value"><span
-                class="token punctuation">=</span><span class="token punctuation">"</span>text<span
-                class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span></code></pre>
-
+        <pre class="  language-markup"><code class="  language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>div</span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>autocomplete-wrapper<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">id</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>city<span class="token punctuation">"</span></span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>text<span class="token punctuation">"</span></span> <span class="token attr-name">class</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>autocomplete<span class="token punctuation">"</span></span> <span class="token attr-name">placeholder</span><span class="token attr-value"><span class="token punctuation">=</span><span class="token punctuation">"</span>Начните вводить код или название<span class="token punctuation">"</span></span><span class="token punctuation">&gt;</span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span class="token punctuation">&gt;</span></span></code></pre>
         <h3>3. Инициализируйте JS</h3>
         <pre><code class="language-javascript">Autocomplete('.autocomplete', {source: 'kladr.json', displayedProperty: 'City'});</code></pre>
         <p>

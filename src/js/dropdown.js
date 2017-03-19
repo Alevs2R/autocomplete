@@ -12,6 +12,7 @@ function Dropdown(baseElement, options) {
     this.handleEvent = function (e) {
         switch (e.type) {
             case "keydown":
+                console.log('dropdown keydown');
                 this._keyDownEvent(e);
         }
     };
@@ -104,6 +105,8 @@ Dropdown.prototype = {
     },
 
     showLoader(){
+        console.log('show loader');
+
         if(this.isLoaderShown) return;
         this.clear();
         this.dropdown.appendChild(this._createLoader());
@@ -123,9 +126,8 @@ Dropdown.prototype = {
         reloadBtn.className = 'autocomplete-control';
         reloadBtn.appendChild(document.createTextNode(RELOAD));
 
-        reloadBtn.addEventListener('click', function(){
-            this.reload();
-        }.bind(this));
+        reloadBtn.addEventListener('click', ()=>this.reload());
+        this.onEnterClick = () => this.reload();
 
         this.dropdown.appendChild(div);
         this.dropdown.appendChild(reloadBtn);
@@ -149,6 +151,7 @@ Dropdown.prototype = {
                 this.dropdown.appendChild(this._getSummary(maxResults, list.length));
             }
 
+            this.onEnterClick = () => this.select(this.activeElement.listRow);
         }
 
 
@@ -249,8 +252,6 @@ Dropdown.prototype = {
 
         this.dropdown.style.visibility = 'visible';
 
-        document.addEventListener('keydown', this);
-
         this.isVisible = true;
         //TODO reaction on window resize
     },
@@ -271,14 +272,19 @@ Dropdown.prototype = {
         }
     },
 
-    remove(){
-        if (!this.isCreated) return;
-        this.dropdown.parentNode.removeChild(this.dropdown);
-        document.body.style.overflow = 'auto';
-        document.removeEventListener('keydown', this);
-
+    _resetVars(){
         this.isCreated = false;
         this.isVisible = false;
+        this.activeElement = null;
+        this.isLoaderShown = false;
+    },
+
+    remove(){
+        if (!this.isCreated) return;
+
+        this._resetVars();
+        this.dropdown.parentNode.removeChild(this.dropdown);
+        document.body.style.overflow = 'auto';
     },
 
     clear(){
@@ -294,7 +300,8 @@ Dropdown.prototype = {
         // callback, should be set by client
     },
 
-    _keyDownEvent(event){
+    keyDownEvent(event){
+        let preventdef = true;
         switch (event.keyCode) {
             case keynumCodes.DOWN:
                 if (!this.activeElement || !this.activeElement.nextSibling) return;
@@ -305,15 +312,16 @@ Dropdown.prototype = {
                 this.setActiveElement(this.activeElement.previousSibling);
                 break;
             case keynumCodes.ENTER:
-                if(!this.activeElement) return;
-                this.select(this.activeElement.listRow);
+                if(this.onEnterClick) this.onEnterClick();
                 break;
             case keynumCodes.ESC:
                 this.remove();
                 break;
-
+            default:
+                preventdef = false;
+                break;
         }
-        event.preventDefault();
+        if(preventdef) event.preventDefault();
     },
 
 }
