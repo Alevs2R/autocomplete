@@ -19,7 +19,6 @@ var options = {
     displayedProperty: 'City',
     sort: true,
     isValidElement,
-    showNumOfResults: true,
     wordEndings: ['города','городов'],
     maxResults: 5
 };

@@ -86,6 +86,10 @@ return /******/ (function(modules) { // webpackBootstrap
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+/*
+@author Alexey Evlampev
+ */
+
 exports.default = Dropdown;
 
 
@@ -429,6 +433,10 @@ var _dropdown = __webpack_require__(0);
 var _dropdown2 = _interopRequireDefault(_dropdown);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/*
+@author Alexey Evlampev
+ */
 
 __webpack_require__(1);
 

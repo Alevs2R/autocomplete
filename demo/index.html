@@ -72,8 +72,13 @@
 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>div</span><span
         class="token punctuation">&gt;</span></span></code></pre>
         <h3>3. Инициализируйте JS</h3>
-        <pre><code class="language-javascript">Autocomplete('.autocomplete', {source: 'kladr.json', displayedProperty: 'City'});</code></pre>
-        <p>
+        <pre class="  language-javascript"><code class="  language-javascript"><span class="token keyword">var</span> options <span class="token operator">=</span> <span class="token punctuation">{</span>
+    source<span class="token punctuation">:</span> <span class="token string">'kladr.json'</span><span class="token punctuation">,</span>
+    displayedProperty<span class="token punctuation">:</span> <span class="token string">'City'</span><span class="token punctuation">,</span>
+    wordEndings<span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token string">'города'</span><span class="token punctuation">,</span><span class="token string">'городов'</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token function">Autocomplete</span><span class="token punctuation">(</span><span class="token string">'.autocomplete'</span><span class="token punctuation">,</span> options<span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>        <p>
             Первый аргумент – селектор (<code class="language-javascript">String</code>) или объект <code
                 class="language-javascript">Element</code><br>
             Второй аргумент – опции (<code class="language-javascript">Object</code>)
